@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using MalaMin.Api.Application.Auth;
+using MalaMin.Api.Application.Common;
+using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
 using MalaMin.Api.Infrastructure.Database;
@@ -19,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddSingleton<JwtTokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -168,6 +172,43 @@ app.MapGet("/api/auth/me", async (
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/tenant/me", async (
+    ITenantContext tenantContext,
+    AppDbContext db,
+    CancellationToken cancellationToken) =>
+{
+    var tenant = await db.Tenants
+        .SingleOrDefaultAsync(existingTenant => existingTenant.Id == tenantContext.TenantId, cancellationToken);
+
+    if (tenant is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "TENANT_NOT_FOUND",
+                message = "Tenant was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = new TenantResponse(
+            tenant.Id,
+            tenant.Name,
+            tenant.Slug,
+            tenant.Phone,
+            tenant.WhatsAppNumber,
+            tenant.LogoUrl,
+            tenant.Address,
+            tenant.City,
+            tenant.Status)
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -177,6 +218,15 @@ if (app.Environment.IsDevelopment())
         email = DevelopmentSeeder.DemoUserEmail,
         password = DevelopmentSeeder.DemoUserPassword
     }));
+
+    app.MapGet("/api/dev/tenant-context", (ITenantContext tenantContext) => Results.Json(new
+    {
+        success = true,
+        userId = tenantContext.UserId,
+        tenantId = tenantContext.TenantId,
+        role = tenantContext.UserRole,
+        isAuthenticated = tenantContext.IsAuthenticated
+    })).RequireAuthorization();
 }
 
 app.Run();

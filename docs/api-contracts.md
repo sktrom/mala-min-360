@@ -98,8 +98,52 @@ Success response:
 
 ## Tenant
 
-GET /api/tenant/me
-PUT /api/tenant/me
+Implemented:
+- GET /api/tenant/me
+
+Not implemented yet:
+- PUT /api/tenant/me
+
+### GET /api/tenant/me
+
+Requires:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+TenantId is resolved from the JWT claims. The frontend must not send TenantId in the body, query string, or headers for tenant-owned operations.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "name": "Demo Real Estate Agency",
+    "slug": "demo-agency",
+    "phone": null,
+    "whatsAppNumber": null,
+    "logoUrl": null,
+    "address": null,
+    "city": "Damascus",
+    "status": "Trial"
+  }
+}
+```
+
+Tenant not found response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TENANT_NOT_FOUND",
+    "message": "Tenant was not found."
+  }
+}
+```
 
 ## Properties
 

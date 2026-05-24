@@ -86,6 +86,14 @@ TenantId must be resolved from the authenticated user context.
 
 The frontend must never be trusted to provide TenantId.
 
+## Tenant Context
+
+TenantId is read from authenticated JWT claims.
+
+The frontend must not send TenantId for tenant-owned operations.
+
+All future tenant-owned queries must use ITenantContext to resolve the current TenantId.
+
 ## Public Access
 
 Only these features are public:
