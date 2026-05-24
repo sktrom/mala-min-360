@@ -58,3 +58,8 @@ uploads/
 storage/
 tmp/
 temp/
+
+# Environment files
+.env
+.env.*
+!.env.example
