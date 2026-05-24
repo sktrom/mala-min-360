@@ -55,4 +55,11 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
     }
 });
 
+app.MapGet("/api/health/model", () => Results.Json(new
+{
+    success = true,
+    entities = new[] { "Tenants", "Users" },
+    timestamp = DateTimeOffset.UtcNow
+}));
+
 app.Run();

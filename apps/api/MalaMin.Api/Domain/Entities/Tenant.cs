@@ -23,4 +23,6 @@ public class Tenant
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public ICollection<AppUser> Users { get; set; } = [];
 }

@@ -6,9 +6,11 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The initial EF Core implementation includes only the Tenants table.
+The current EF Core implementation includes the Tenants and Users tables.
 
 More entities will be added step by step in later implementation steps.
+
+Authentication is not implemented yet.
 
 ## Multi-Tenancy Rule
 
@@ -18,7 +20,7 @@ The API must scope tenant-owned queries by TenantId.
 
 ## Core Entities
 
-## Tenants
+## Tenants (Implemented)
 
 Represents a real estate agency.
 
@@ -41,7 +43,7 @@ Status values:
 - Suspended
 - Expired
 
-## Users
+## Users (Implemented)
 
 Represents platform users.
 

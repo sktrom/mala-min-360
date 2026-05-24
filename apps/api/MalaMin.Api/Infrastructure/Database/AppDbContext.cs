@@ -7,6 +7,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
+    public DbSet<AppUser> Users => Set<AppUser>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -40,6 +42,56 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(tenant => tenant.Status)
                 .IsRequired()
                 .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.ToTable("Users");
+
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.TenantId)
+                .IsRequired();
+
+            entity.Property(user => user.FullName)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(user => user.Email)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.HasIndex(user => user.Email)
+                .IsUnique();
+
+            entity.HasIndex(user => user.TenantId);
+
+            entity.Property(user => user.Phone)
+                .HasMaxLength(50);
+
+            entity.Property(user => user.PasswordHash)
+                .IsRequired();
+
+            entity.Property(user => user.Role)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(user => user.IsActive)
+                .IsRequired();
+
+            entity.Property(user => user.LastLoginAt)
+                .IsRequired(false);
+
+            entity.Property(user => user.CreatedAt)
+                .IsRequired();
+
+            entity.Property(user => user.UpdatedAt)
+                .IsRequired();
+
+            entity.HasOne(user => user.Tenant)
+                .WithMany(tenant => tenant.Users)
+                .HasForeignKey(user => user.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
