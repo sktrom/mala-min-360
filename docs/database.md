@@ -4,6 +4,12 @@
 
 PostgreSQL is the target database.
 
+## Current Implementation
+
+The initial EF Core implementation includes only the Tenants table.
+
+More entities will be added step by step in later implementation steps.
+
 ## Multi-Tenancy Rule
 
 Every tenant-owned table must include TenantId.
