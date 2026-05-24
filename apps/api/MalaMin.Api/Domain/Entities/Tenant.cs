@@ -25,4 +25,6 @@ public class Tenant
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public ICollection<AppUser> Users { get; set; } = [];
+
+    public ICollection<Property> Properties { get; set; } = [];
 }

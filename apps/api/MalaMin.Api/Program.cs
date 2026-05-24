@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using MalaMin.Api.Application.Auth;
 using MalaMin.Api.Application.Common;
+using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PropertyService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -113,7 +115,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users" },
+    entities = new[] { "Tenants", "Users", "Properties" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -209,6 +211,111 @@ app.MapGet("/api/tenant/me", async (
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/properties", async (
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var properties = await propertyService.ListAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = properties
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/properties", async (
+    CreatePropertyRequest request,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyService.CreateAsync(request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapGet("/api/properties/{id:guid}", async (
+    Guid id,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var property = await propertyService.GetAsync(id, cancellationToken);
+
+    if (property is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_NOT_FOUND",
+                message = "Property was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = property
+    });
+}).RequireAuthorization();
+
+app.MapPut("/api/properties/{id:guid}", async (
+    Guid id,
+    UpdatePropertyRequest request,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyService.UpdateAsync(id, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapDelete("/api/properties/{id:guid}", async (
+    Guid id,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var deleted = await propertyService.SoftDeleteAsync(id, cancellationToken);
+
+    if (!deleted)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_NOT_FOUND",
+                message = "Property was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -230,3 +337,20 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+static IResult CreateErrorResult<T>(PropertyServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode == "PROPERTY_NOT_FOUND"
+        ? StatusCodes.Status404NotFound
+        : StatusCodes.Status400BadRequest;
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
+}

@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants and Users tables.
+The current EF Core implementation includes the Tenants, Users, and Properties tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -24,6 +24,8 @@ User passwords are stored only as PasswordHash values. Plain text passwords are 
 Every tenant-owned table must include TenantId.
 
 The API must scope tenant-owned queries by TenantId.
+
+TenantId is resolved from JWT claims through ITenantContext and is never accepted from the frontend.
 
 ## Core Entities
 
@@ -73,9 +75,13 @@ Roles:
 - Manager
 - Agent
 
-## Properties
+## Properties (Implemented)
 
 Represents a property listing.
+
+Properties are tenant-owned through TenantId.
+
+Delete operations use soft delete by setting DeletedAt.
 
 Fields:
 - Id

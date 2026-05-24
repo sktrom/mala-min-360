@@ -147,13 +147,90 @@ Tenant not found response:
 
 ## Properties
 
-GET    /api/properties
-POST   /api/properties
-GET    /api/properties/{id}
-PUT    /api/properties/{id}
-DELETE /api/properties/{id}
-PATCH  /api/properties/{id}/publish
-PATCH  /api/properties/{id}/unpublish
+Implemented:
+- GET    /api/properties
+- POST   /api/properties
+- GET    /api/properties/{id}
+- PUT    /api/properties/{id}
+- DELETE /api/properties/{id}
+
+Not implemented yet:
+- PATCH /api/properties/{id}/publish
+- PATCH /api/properties/{id}/unpublish
+
+All property endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Property operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+### POST /api/properties
+
+Request:
+
+```json
+{
+  "title": "Demo Apartment in Damascus",
+  "description": "Test property for Mala Min 360.",
+  "city": "Damascus",
+  "areaName": "Malki",
+  "addressText": "Near main street",
+  "price": 75000,
+  "currency": "USD",
+  "listingType": "Sale",
+  "propertyType": "Apartment",
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "floorNumber": 2,
+  "areaSqm": 120
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "title": "Demo Apartment in Damascus",
+    "slug": "demo-apartment-in-damascus",
+    "description": "Test property for Mala Min 360.",
+    "city": "Damascus",
+    "areaName": "Malki",
+    "addressText": "Near main street",
+    "price": 75000,
+    "currency": "USD",
+    "listingType": "Sale",
+    "propertyType": "Apartment",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "floorNumber": 2,
+    "areaSqm": 120,
+    "status": "Available",
+    "isPublished": false,
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+### PUT /api/properties/{id}
+
+Request includes the create fields plus:
+
+```json
+{
+  "status": "Available",
+  "isPublished": false
+}
+```
+
+### DELETE /api/properties/{id}
+
+Soft deletes the property by setting DeletedAt.
 
 ## Media
 

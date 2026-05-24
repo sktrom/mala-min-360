@@ -9,6 +9,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AppUser> Users => Set<AppUser>();
 
+    public DbSet<Property> Properties => Set<Property>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -91,6 +93,94 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(user => user.Tenant)
                 .WithMany(tenant => tenant.Users)
                 .HasForeignKey(user => user.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Property>(entity =>
+        {
+            entity.ToTable("Properties");
+
+            entity.HasKey(property => property.Id);
+
+            entity.Property(property => property.TenantId)
+                .IsRequired();
+
+            entity.Property(property => property.Title)
+                .IsRequired()
+                .HasMaxLength(250);
+
+            entity.Property(property => property.Slug)
+                .IsRequired()
+                .HasMaxLength(250);
+
+            entity.Property(property => property.Description)
+                .IsRequired(false);
+
+            entity.Property(property => property.City)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(property => property.AreaName)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(property => property.AddressText)
+                .IsRequired(false);
+
+            entity.Property(property => property.Price)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            entity.Property(property => property.Currency)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.Property(property => property.ListingType)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(property => property.PropertyType)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(property => property.Bedrooms)
+                .IsRequired(false);
+
+            entity.Property(property => property.Bathrooms)
+                .IsRequired(false);
+
+            entity.Property(property => property.FloorNumber)
+                .IsRequired(false);
+
+            entity.Property(property => property.AreaSqm)
+                .IsRequired();
+
+            entity.Property(property => property.Status)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(property => property.IsPublished)
+                .IsRequired();
+
+            entity.Property(property => property.CreatedAt)
+                .IsRequired();
+
+            entity.Property(property => property.UpdatedAt)
+                .IsRequired();
+
+            entity.Property(property => property.DeletedAt)
+                .IsRequired(false);
+
+            entity.HasIndex(property => property.TenantId);
+            entity.HasIndex(property => property.Slug);
+            entity.HasIndex(property => new { property.TenantId, property.Slug })
+                .IsUnique();
+            entity.HasIndex(property => property.Status);
+            entity.HasIndex(property => property.IsPublished);
+
+            entity.HasOne(property => property.Tenant)
+                .WithMany(tenant => tenant.Properties)
+                .HasForeignKey(property => property.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
