@@ -1,0 +1,60 @@
+﻿# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+coverage/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+TestResults/
+.vs/
+
+# Rider / JetBrains
+.idea/
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Secrets and certificates
+*.pfx
+*.pem
+*.key
+*.crt
+
+# Local uploads / generated files
+uploads/
+storage/
+tmp/
+temp/
