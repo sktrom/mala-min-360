@@ -149,6 +149,40 @@ public sealed class PropertyService(AppDbContext db, ITenantContext tenantContex
         return true;
     }
 
+    public async Task<PropertyServiceResult<PropertyResponse>> PublishAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await SetPublishedAsync(id, true, cancellationToken);
+    }
+
+    public async Task<PropertyServiceResult<PropertyResponse>> UnpublishAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await SetPublishedAsync(id, false, cancellationToken);
+    }
+
+    private async Task<PropertyServiceResult<PropertyResponse>> SetPublishedAsync(
+        Guid id,
+        bool isPublished,
+        CancellationToken cancellationToken)
+    {
+        var property = await FindCurrentTenantPropertyAsync(id, cancellationToken);
+
+        if (property is null)
+        {
+            return PropertyServiceResult<PropertyResponse>.NotFound();
+        }
+
+        property.IsPublished = isPublished;
+        property.UpdatedAt = DateTimeOffset.UtcNow;
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return PropertyServiceResult<PropertyResponse>.Success(ToResponse(property));
+    }
+
     private async Task<Property?> FindCurrentTenantPropertyAsync(Guid id, CancellationToken cancellationToken)
     {
         var tenantId = tenantContext.TenantId;

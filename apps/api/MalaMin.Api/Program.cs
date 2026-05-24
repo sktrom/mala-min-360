@@ -4,6 +4,7 @@ using System.Text;
 using MalaMin.Api.Application.Auth;
 using MalaMin.Api.Application.Common;
 using MalaMin.Api.Application.Properties;
+using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
@@ -22,6 +23,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PropertyService>();
+builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -118,6 +120,37 @@ app.MapGet("/api/health/model", () => Results.Json(new
     entities = new[] { "Tenants", "Users", "Properties" },
     timestamp = DateTimeOffset.UtcNow
 }));
+
+app.MapGet("/api/public/properties/{tenantSlug}/{propertySlug}", async (
+    string tenantSlug,
+    string propertySlug,
+    PublicPropertyService publicPropertyService,
+    CancellationToken cancellationToken) =>
+{
+    var property = await publicPropertyService.GetPublishedPropertyAsync(
+        tenantSlug,
+        propertySlug,
+        cancellationToken);
+
+    if (property is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PUBLIC_PROPERTY_NOT_FOUND",
+                message = "Property was not found or is not published."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = property
+    });
+});
 
 app.MapPost("/api/auth/login", async (
     LoginRequest request,
@@ -313,6 +346,44 @@ app.MapDelete("/api/properties/{id:guid}", async (
     return Results.Json(new
     {
         success = true
+    });
+}).RequireAuthorization();
+
+app.MapPatch("/api/properties/{id:guid}/publish", async (
+    Guid id,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyService.PublishAsync(id, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPatch("/api/properties/{id:guid}/unpublish", async (
+    Guid id,
+    PropertyService propertyService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyService.UnpublishAsync(id, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
     });
 }).RequireAuthorization();
 

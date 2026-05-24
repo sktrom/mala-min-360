@@ -153,8 +153,6 @@ Implemented:
 - GET    /api/properties/{id}
 - PUT    /api/properties/{id}
 - DELETE /api/properties/{id}
-
-Not implemented yet:
 - PATCH /api/properties/{id}/publish
 - PATCH /api/properties/{id}/unpublish
 
@@ -232,6 +230,14 @@ Request includes the create fields plus:
 
 Soft deletes the property by setting DeletedAt.
 
+### PATCH /api/properties/{id}/publish
+
+Marks the current tenant's non-deleted property as published.
+
+### PATCH /api/properties/{id}/unpublish
+
+Marks the current tenant's non-deleted property as unpublished.
+
 ## Media
 
 POST   /api/media/upload
@@ -268,12 +274,79 @@ GET /api/stats/properties/{propertyId}
 
 ## Public Property Page
 
-GET  /api/public/properties/{tenantSlug}/{propertySlug}
+Implemented:
+- GET /api/public/properties/{tenantSlug}/{propertySlug}
+
+Not implemented yet:
+- GET  /api/public/properties/{tenantSlug}/{propertySlug}/tour
+- POST /api/public/properties/{propertyId}/track-view
+- POST /api/public/properties/{propertyId}/track-tour-view
+- POST /api/public/properties/{propertyId}/track-whatsapp-click
+- POST /api/public/properties/{propertyId}/track-qr-scan
+
+### GET /api/public/properties/{tenantSlug}/{propertySlug}
+
+Public endpoint. No Authorization header is required.
+
+Returns only published, non-deleted properties for the tenant slug and property slug.
+
+The response does not expose TenantId, DeletedAt, IsPublished, internal user data, or authentication data.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "title": "Public Demo Apartment",
+    "slug": "public-demo-apartment",
+    "description": "Public test property for Mala Min 360.",
+    "city": "Damascus",
+    "areaName": "Malki",
+    "addressText": "Near main street",
+    "price": 75000,
+    "currency": "USD",
+    "listingType": "Sale",
+    "propertyType": "Apartment",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "floorNumber": 2,
+    "areaSqm": 120,
+    "status": "Available",
+    "createdAt": "...",
+    "updatedAt": "...",
+    "tenant": {
+      "name": "Demo Real Estate Agency",
+      "slug": "demo-agency",
+      "phone": null,
+      "whatsAppNumber": null,
+      "logoUrl": null,
+      "city": "Damascus"
+    }
+  }
+}
+```
+
+Not found response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "PUBLIC_PROPERTY_NOT_FOUND",
+    "message": "Property was not found or is not published."
+  }
+}
+```
+
+<!-- Future endpoints:
 GET  /api/public/properties/{tenantSlug}/{propertySlug}/tour
 POST /api/public/properties/{propertyId}/track-view
 POST /api/public/properties/{propertyId}/track-tour-view
 POST /api/public/properties/{propertyId}/track-whatsapp-click
 POST /api/public/properties/{propertyId}/track-qr-scan
+-->
 
 ## Admin
 

@@ -103,6 +103,16 @@ Only these features are public:
 
 Everything else requires authentication.
 
+## Public Property API
+
+The public property endpoint uses tenantSlug and propertySlug.
+
+Only published, non-deleted properties are visible publicly.
+
+Authentication is not required for public property viewing.
+
+Future media and 360 tour data will be added later.
+
 ## Security
 
 Rules:
