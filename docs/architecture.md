@@ -78,6 +78,16 @@ Rules:
 - Never store files directly inside PostgreSQL.
 - Store only metadata and URLs in the database.
 
+## Media Foundation
+
+Media uploads use local storage for development under storage/uploads.
+
+PostgreSQL stores media metadata only.
+
+Files are tenant-scoped and saved under tenant-specific folders.
+
+Future production storage will use S3/R2-compatible object storage.
+
 ## Multi-Tenancy
 
 Every tenant-owned entity must include TenantId.

@@ -240,10 +240,75 @@ Marks the current tenant's non-deleted property as unpublished.
 
 ## Media
 
-POST   /api/media/upload
-GET    /api/media
-GET    /api/media/{id}
-DELETE /api/media/{id}
+Implemented:
+- POST   /api/media/upload
+- GET    /api/media
+- GET    /api/media/{id}
+- DELETE /api/media/{id}
+
+All media endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Media operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+### POST /api/media/upload
+
+Request:
+
+```text
+multipart/form-data
+file=<uploaded image>
+fileType=NormalImage
+```
+
+Allowed file types:
+- NormalImage
+- Panorama360
+- Logo
+- Other
+
+Allowed MIME types:
+- image/jpeg
+- image/png
+- image/webp
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "url": "/uploads/...",
+    "storageKey": "...",
+    "fileType": "NormalImage",
+    "originalFileName": "test-image.jpg",
+    "mimeType": "image/jpeg",
+    "sizeBytes": 12345,
+    "width": null,
+    "height": null,
+    "processingStatus": "Completed",
+    "createdAt": "..."
+  }
+}
+```
+
+The response does not expose TenantId.
+
+### GET /api/media
+
+Returns current tenant media only, excluding soft-deleted records.
+
+### GET /api/media/{id}
+
+Returns media only when it belongs to the current tenant and is not soft-deleted.
+
+### DELETE /api/media/{id}
+
+Soft deletes media metadata by setting DeletedAt. This step does not physically delete the local file.
 
 ## Property Images
 

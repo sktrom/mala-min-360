@@ -54,10 +54,11 @@ docker-compose.override.yml
 *.crt
 
 # Local uploads / generated files
-uploads/
-storage/
-tmp/
-temp/
+/uploads/
+/storage/
+/tmp/
+/temp/
+apps/api/MalaMin.Api/storage/
 
 # Environment files
 .env

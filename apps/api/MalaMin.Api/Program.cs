@@ -3,15 +3,18 @@ using System.Security.Claims;
 using System.Text;
 using MalaMin.Api.Application.Auth;
 using MalaMin.Api.Application.Common;
+using MalaMin.Api.Application.Media;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
 using MalaMin.Api.Infrastructure.Database;
+using MalaMin.Api.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,9 +27,12 @@ builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PropertyService>();
 builder.Services.AddScoped<PublicPropertyService>();
+builder.Services.AddScoped<MediaService>();
+builder.Services.AddScoped<LocalMediaStorageService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.Configure<LocalStorageOptions>(builder.Configuration.GetSection("LocalStorage"));
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -62,6 +68,16 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     await DevelopmentSeeder.SeedAsync(scope.ServiceProvider);
+
+    var storageService = scope.ServiceProvider.GetRequiredService<LocalMediaStorageService>();
+    var storageRootPath = storageService.GetStorageRootPath();
+    Directory.CreateDirectory(storageRootPath);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(storageRootPath),
+        RequestPath = "/uploads"
+    });
 }
 
 app.UseAuthentication();
@@ -117,7 +133,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -387,6 +403,121 @@ app.MapPatch("/api/properties/{id:guid}/unpublish", async (
     });
 }).RequireAuthorization();
 
+app.MapPost("/api/media/upload", async (
+    HttpRequest request,
+    MediaService mediaService,
+    CancellationToken cancellationToken) =>
+{
+    if (!request.HasFormContentType)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "VALIDATION_ERROR",
+                message = "Request must be multipart/form-data."
+            }
+        }, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var form = await request.ReadFormAsync(cancellationToken);
+    var file = form.Files.GetFile("file");
+    var fileType = form["fileType"].ToString();
+
+    if (file is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "VALIDATION_ERROR",
+                message = "Uploaded file is required."
+            }
+        }, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var result = await mediaService.UploadAsync(file, fileType, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateMediaErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization().DisableAntiforgery();
+
+app.MapGet("/api/media", async (
+    MediaService mediaService,
+    CancellationToken cancellationToken) =>
+{
+    var mediaFiles = await mediaService.ListAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = mediaFiles
+    });
+}).RequireAuthorization();
+
+app.MapGet("/api/media/{id:guid}", async (
+    Guid id,
+    MediaService mediaService,
+    CancellationToken cancellationToken) =>
+{
+    var mediaFile = await mediaService.GetAsync(id, cancellationToken);
+
+    if (mediaFile is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "MEDIA_NOT_FOUND",
+                message = "Media file was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = mediaFile
+    });
+}).RequireAuthorization();
+
+app.MapDelete("/api/media/{id:guid}", async (
+    Guid id,
+    MediaService mediaService,
+    CancellationToken cancellationToken) =>
+{
+    var deleted = await mediaService.SoftDeleteAsync(id, cancellationToken);
+
+    if (!deleted)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "MEDIA_NOT_FOUND",
+                message = "Media file was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -424,4 +555,17 @@ static IResult CreateErrorResult<T>(PropertyServiceResult<T> result)
             message = result.ErrorMessage
         }
     }, statusCode: statusCode);
+}
+
+static IResult CreateMediaErrorResult<T>(MediaServiceResult<T> result)
+{
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: StatusCodes.Status400BadRequest);
 }

@@ -27,4 +27,6 @@ public class Tenant
     public ICollection<AppUser> Users { get; set; } = [];
 
     public ICollection<Property> Properties { get; set; } = [];
+
+    public ICollection<MediaFile> MediaFiles { get; set; } = [];
 }

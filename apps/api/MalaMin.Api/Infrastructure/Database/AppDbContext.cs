@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Property> Properties => Set<Property>();
 
+    public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -181,6 +183,65 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(property => property.Tenant)
                 .WithMany(tenant => tenant.Properties)
                 .HasForeignKey(property => property.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MediaFile>(entity =>
+        {
+            entity.ToTable("MediaFiles");
+
+            entity.HasKey(mediaFile => mediaFile.Id);
+
+            entity.Property(mediaFile => mediaFile.TenantId)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.Url)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.StorageKey)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.FileType)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(mediaFile => mediaFile.OriginalFileName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(mediaFile => mediaFile.MimeType)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(mediaFile => mediaFile.SizeBytes)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.Width)
+                .IsRequired(false);
+
+            entity.Property(mediaFile => mediaFile.Height)
+                .IsRequired(false);
+
+            entity.Property(mediaFile => mediaFile.ProcessingStatus)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(mediaFile => mediaFile.CreatedAt)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.UpdatedAt)
+                .IsRequired();
+
+            entity.Property(mediaFile => mediaFile.DeletedAt)
+                .IsRequired(false);
+
+            entity.HasIndex(mediaFile => mediaFile.TenantId);
+            entity.HasIndex(mediaFile => mediaFile.FileType);
+            entity.HasIndex(mediaFile => mediaFile.ProcessingStatus);
+
+            entity.HasOne(mediaFile => mediaFile.Tenant)
+                .WithMany(tenant => tenant.MediaFiles)
+                .HasForeignKey(mediaFile => mediaFile.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

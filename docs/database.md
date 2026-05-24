@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, and Properties tables.
+The current EF Core implementation includes the Tenants, Users, Properties, and MediaFiles tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -124,9 +124,15 @@ Status values:
 - Sold
 - Rented
 
-## MediaFiles
+## MediaFiles (Implemented)
 
 Represents uploaded media metadata.
+
+MediaFiles are tenant-owned through TenantId.
+
+Files are not stored in PostgreSQL. PostgreSQL stores metadata only.
+
+Local development storage under storage/uploads is temporary; future production storage will use S3/R2-compatible object storage.
 
 Fields:
 - Id
@@ -134,17 +140,21 @@ Fields:
 - Url
 - StorageKey
 - FileType
+- OriginalFileName
 - MimeType
 - SizeBytes
 - Width
 - Height
 - ProcessingStatus
 - CreatedAt
+- UpdatedAt
+- DeletedAt
 
 FileType values:
 - NormalImage
 - Panorama360
 - Logo
+- Other
 
 ProcessingStatus values:
 - Pending
@@ -256,6 +266,8 @@ Recommended indexes:
 - Properties.Slug
 - Properties.TenantId + Slug unique
 - MediaFiles.TenantId
+- MediaFiles.FileType
+- MediaFiles.ProcessingStatus
 - TourRooms.PropertyId
 - TourHotspots.RoomId
 - PropertyStats.PropertyId + StatDate unique
