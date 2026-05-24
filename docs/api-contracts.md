@@ -16,10 +16,85 @@ Admin APIs are under:
 
 ## Auth
 
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/logout
-GET  /api/auth/me
+Implemented:
+- POST /api/auth/login
+- GET  /api/auth/me
+
+Not implemented yet:
+- Public registration
+- Refresh tokens
+- Logout
+- Forgot password
+- Email verification
+
+### POST /api/auth/login
+
+Request:
+
+```json
+{
+  "email": "owner@demo.local",
+  "password": "Demo12345!"
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "...",
+    "expiresAt": "...",
+    "user": {
+      "id": "...",
+      "tenantId": "...",
+      "fullName": "Demo Owner",
+      "email": "owner@demo.local",
+      "role": "TenantOwner",
+      "tenantName": "Demo Real Estate Agency",
+      "tenantSlug": "demo-agency"
+    }
+  }
+}
+```
+
+Invalid credentials response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_CREDENTIALS",
+    "message": "Invalid email or password."
+  }
+}
+```
+
+### GET /api/auth/me
+
+Requires:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "tenantId": "...",
+    "fullName": "Demo Owner",
+    "email": "owner@demo.local",
+    "role": "TenantOwner",
+    "tenantName": "Demo Real Estate Agency",
+    "tenantSlug": "demo-agency"
+  }
+}
+```
 
 ## Tenant
 

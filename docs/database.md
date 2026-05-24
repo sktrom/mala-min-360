@@ -10,7 +10,14 @@ The current EF Core implementation includes the Tenants and Users tables.
 
 More entities will be added step by step in later implementation steps.
 
-Authentication is not implemented yet.
+Authentication foundation is implemented for development login testing.
+
+Development startup seeds one demo tenant and owner user when running in Development:
+- Tenant: Demo Real Estate Agency
+- Tenant slug: demo-agency
+- User email: owner@demo.local
+
+User passwords are stored only as PasswordHash values. Plain text passwords are not stored in the database.
 
 ## Multi-Tenancy Rule
 
