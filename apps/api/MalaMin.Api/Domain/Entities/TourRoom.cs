@@ -25,4 +25,8 @@ public class TourRoom
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public ICollection<TourHotspot> Hotspots { get; set; } = [];
+
+    public ICollection<TourHotspot> IncomingHotspots { get; set; } = [];
 }

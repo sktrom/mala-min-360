@@ -477,9 +477,73 @@ Soft deletes the tour room only. It does not delete MediaFile metadata or the ph
 
 ## Tour Hotspots
 
-POST   /api/tour/rooms/{roomId}/hotspots
-PUT    /api/tour/hotspots/{hotspotId}
-DELETE /api/tour/hotspots/{hotspotId}
+Implemented:
+- GET    /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots
+- POST   /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots
+- GET    /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots/{hotspotId}
+- PUT    /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots/{hotspotId}
+- DELETE /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots/{hotspotId}
+
+All tour hotspot endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Tour hotspot operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+Navigate hotspots require targetRoomId and the target room must belong to the same property and tenant.
+
+Info hotspots do not use targetRoomId.
+
+Yaw must be between -180 and 180. Pitch must be between -90 and 90.
+
+### POST /api/properties/{propertyId}/tour/rooms/{roomId}/hotspots
+
+Navigate request:
+
+```json
+{
+  "type": "Navigate",
+  "label": "Go to Kitchen",
+  "targetRoomId": "...",
+  "yaw": 45.25,
+  "pitch": -5.50
+}
+```
+
+Info request:
+
+```json
+{
+  "type": "Info",
+  "label": "Large window with natural light",
+  "targetRoomId": null,
+  "yaw": -25.50,
+  "pitch": 10.00
+}
+```
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "roomId": "...",
+    "targetRoomId": "...",
+    "type": "Navigate",
+    "label": "Go to Kitchen",
+    "yaw": 45.25,
+    "pitch": -5.50,
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+The response does not expose TenantId.
 
 ## Stats
 

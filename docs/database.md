@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, and TourRooms tables.
+The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, TourRooms, and TourHotspots tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -207,9 +207,17 @@ Fields:
 - UpdatedAt
 - DeletedAt
 
-## TourHotspots
+## TourHotspots (Implemented)
 
 Represents clickable points inside a 360 room.
+
+Navigate hotspots require TargetRoomId.
+
+Info hotspots do not require TargetRoomId.
+
+Source and target rooms must belong to the same property and tenant.
+
+Public Tour API is not implemented yet.
 
 Fields:
 - Id
@@ -222,6 +230,7 @@ Fields:
 - Pitch
 - CreatedAt
 - UpdatedAt
+- DeletedAt
 
 Type values:
 - Navigate
@@ -295,7 +304,10 @@ Recommended indexes:
 - TourRooms.PanoramaMediaId
 - TourRooms.PropertyId + SortOrder
 - TourRooms.PropertyId + IsStartRoom
+- TourHotspots.TenantId
 - TourHotspots.RoomId
+- TourHotspots.TargetRoomId
+- TourHotspots.Type
 - PropertyStats.PropertyId + StatDate unique
 
 ## Soft Delete Rule
@@ -305,5 +317,6 @@ Use DeletedAt for business entities such as:
 - MediaFiles if needed
 - PropertyImages
 - TourRooms if needed
+- TourHotspots
 
 Do not physically delete business data unless explicitly required.

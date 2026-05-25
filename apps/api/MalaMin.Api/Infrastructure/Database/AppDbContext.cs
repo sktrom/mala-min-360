@@ -17,6 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<TourRoom> TourRooms => Set<TourRoom>();
 
+    public DbSet<TourHotspot> TourHotspots => Set<TourHotspot>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -344,6 +346,62 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(tourRoom => tourRoom.PanoramaMedia)
                 .WithMany(mediaFile => mediaFile.TourRooms)
                 .HasForeignKey(tourRoom => tourRoom.PanoramaMediaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TourHotspot>(entity =>
+        {
+            entity.ToTable("TourHotspots");
+
+            entity.HasKey(hotspot => hotspot.Id);
+
+            entity.Property(hotspot => hotspot.TenantId)
+                .IsRequired();
+
+            entity.Property(hotspot => hotspot.RoomId)
+                .IsRequired();
+
+            entity.Property(hotspot => hotspot.TargetRoomId)
+                .IsRequired(false);
+
+            entity.Property(hotspot => hotspot.Type)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(hotspot => hotspot.Label)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(hotspot => hotspot.Yaw)
+                .IsRequired()
+                .HasPrecision(10, 6);
+
+            entity.Property(hotspot => hotspot.Pitch)
+                .IsRequired()
+                .HasPrecision(10, 6);
+
+            entity.Property(hotspot => hotspot.CreatedAt)
+                .IsRequired();
+
+            entity.Property(hotspot => hotspot.UpdatedAt)
+                .IsRequired();
+
+            entity.Property(hotspot => hotspot.DeletedAt)
+                .IsRequired(false);
+
+            entity.HasIndex(hotspot => hotspot.TenantId);
+            entity.HasIndex(hotspot => hotspot.RoomId);
+            entity.HasIndex(hotspot => hotspot.TargetRoomId);
+            entity.HasIndex(hotspot => hotspot.Type);
+
+            entity.HasOne(hotspot => hotspot.Room)
+                .WithMany(room => room.Hotspots)
+                .HasForeignKey(hotspot => hotspot.RoomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(hotspot => hotspot.TargetRoom)
+                .WithMany(room => room.IncomingHotspots)
+                .HasForeignKey(hotspot => hotspot.TargetRoomId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

@@ -8,6 +8,7 @@ using MalaMin.Api.Application.PropertyImages;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Tenants;
+using MalaMin.Api.Application.TourHotspots;
 using MalaMin.Api.Application.TourRooms;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
@@ -32,6 +33,7 @@ builder.Services.AddScoped<PropertyImageService>();
 builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<TourRoomService>();
+builder.Services.AddScoped<TourHotspotService>();
 builder.Services.AddScoped<LocalMediaStorageService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
@@ -137,7 +139,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms", "TourHotspots" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -791,6 +793,126 @@ app.MapDelete("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}", asyn
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/hotspots", async (
+    Guid propertyId,
+    Guid roomId,
+    TourHotspotService tourHotspotService,
+    CancellationToken cancellationToken) =>
+{
+    var hotspots = await tourHotspotService.ListAsync(propertyId, roomId, cancellationToken);
+
+    if (hotspots is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "TOUR_ROOM_NOT_FOUND",
+                message = "Tour room was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = hotspots
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/hotspots", async (
+    Guid propertyId,
+    Guid roomId,
+    CreateTourHotspotRequest request,
+    TourHotspotService tourHotspotService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourHotspotService.CreateAsync(propertyId, roomId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourHotspotErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapGet("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/hotspots/{hotspotId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    Guid hotspotId,
+    TourHotspotService tourHotspotService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourHotspotService.GetAsync(propertyId, roomId, hotspotId, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourHotspotErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPut("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/hotspots/{hotspotId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    Guid hotspotId,
+    UpdateTourHotspotRequest request,
+    TourHotspotService tourHotspotService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourHotspotService.UpdateAsync(propertyId, roomId, hotspotId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourHotspotErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapDelete("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/hotspots/{hotspotId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    Guid hotspotId,
+    TourHotspotService tourHotspotService,
+    CancellationToken cancellationToken) =>
+{
+    var deleted = await tourHotspotService.SoftDeleteAsync(propertyId, roomId, hotspotId, cancellationToken);
+
+    if (!deleted)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "TOUR_HOTSPOT_NOT_FOUND",
+                message = "Tour hotspot was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -861,6 +983,23 @@ static IResult CreatePropertyImageErrorResult<T>(PropertyImageServiceResult<T> r
 }
 
 static IResult CreateTourRoomErrorResult<T>(TourRoomServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode == "VALIDATION_ERROR"
+        ? StatusCodes.Status400BadRequest
+        : StatusCodes.Status404NotFound;
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
+}
+
+static IResult CreateTourHotspotErrorResult<T>(TourHotspotServiceResult<T> result)
 {
     var statusCode = result.ErrorCode == "VALIDATION_ERROR"
         ? StatusCodes.Status400BadRequest
