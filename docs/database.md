@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, and PropertyImages tables.
+The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, and TourRooms tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -183,9 +183,17 @@ Fields:
 - UpdatedAt
 - DeletedAt
 
-## TourRooms
+## TourRooms (Implemented)
 
 Represents one 360 panorama position inside a property.
+
+TourRooms link Properties to Panorama360 MediaFiles.
+
+Delete operations soft delete the room only by setting DeletedAt.
+
+MediaFile metadata and physical files are not deleted by TourRoom operations.
+
+Hotspots are not implemented yet.
 
 Fields:
 - Id
@@ -197,6 +205,7 @@ Fields:
 - IsStartRoom
 - CreatedAt
 - UpdatedAt
+- DeletedAt
 
 ## TourHotspots
 
@@ -281,7 +290,11 @@ Recommended indexes:
 - PropertyImages.MediaFileId
 - PropertyImages.PropertyId + SortOrder
 - PropertyImages.PropertyId + IsCover
+- TourRooms.TenantId
 - TourRooms.PropertyId
+- TourRooms.PanoramaMediaId
+- TourRooms.PropertyId + SortOrder
+- TourRooms.PropertyId + IsStartRoom
 - TourHotspots.RoomId
 - PropertyStats.PropertyId + StatDate unique
 

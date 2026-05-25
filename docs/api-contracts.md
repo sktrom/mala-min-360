@@ -390,11 +390,90 @@ Soft deletes the property image link only. It does not delete MediaFile metadata
 
 ## Tour Rooms
 
-GET    /api/properties/{propertyId}/tour
-POST   /api/properties/{propertyId}/tour/rooms
-PUT    /api/tour/rooms/{roomId}
-DELETE /api/tour/rooms/{roomId}
-PATCH  /api/tour/rooms/{roomId}/start
+Implemented:
+- GET    /api/properties/{propertyId}/tour/rooms
+- POST   /api/properties/{propertyId}/tour/rooms
+- GET    /api/properties/{propertyId}/tour/rooms/{roomId}
+- PUT    /api/properties/{propertyId}/tour/rooms/{roomId}
+- PUT    /api/properties/{propertyId}/tour/rooms/reorder
+- PATCH  /api/properties/{propertyId}/tour/rooms/{roomId}/start
+- DELETE /api/properties/{propertyId}/tour/rooms/{roomId}
+
+All tour room endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Tour room operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+Only current tenant MediaFiles with fileType Panorama360 can be linked as tour room panoramas.
+
+### POST /api/properties/{propertyId}/tour/rooms
+
+Request:
+
+```json
+{
+  "name": "Living Room",
+  "panoramaMediaId": "...",
+  "sortOrder": 0,
+  "isStartRoom": true
+}
+```
+
+The first tour room is automatically set as the start room.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "propertyId": "...",
+    "name": "Living Room",
+    "panoramaMediaId": "...",
+    "panoramaUrl": "/uploads/...",
+    "originalFileName": "panorama.jpg",
+    "mimeType": "image/jpeg",
+    "sizeBytes": 12345,
+    "width": null,
+    "height": null,
+    "sortOrder": 0,
+    "isStartRoom": true,
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+The response does not expose TenantId.
+
+### PUT /api/properties/{propertyId}/tour/rooms/{roomId}
+
+Updates room metadata and panorama media. The new panorama media must belong to the current tenant and have fileType Panorama360.
+
+### PUT /api/properties/{propertyId}/tour/rooms/reorder
+
+Request:
+
+```json
+{
+  "rooms": [
+    { "tourRoomId": "...", "sortOrder": 0 },
+    { "tourRoomId": "...", "sortOrder": 1 }
+  ]
+}
+```
+
+### PATCH /api/properties/{propertyId}/tour/rooms/{roomId}/start
+
+Sets one tour room as the start room and unsets other start rooms for the same property.
+
+### DELETE /api/properties/{propertyId}/tour/rooms/{roomId}
+
+Soft deletes the tour room only. It does not delete MediaFile metadata or the physical file.
 
 ## Tour Hotspots
 

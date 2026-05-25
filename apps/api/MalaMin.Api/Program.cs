@@ -8,6 +8,7 @@ using MalaMin.Api.Application.PropertyImages;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Tenants;
+using MalaMin.Api.Application.TourRooms;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
 using MalaMin.Api.Infrastructure.Database;
@@ -30,6 +31,7 @@ builder.Services.AddScoped<PropertyService>();
 builder.Services.AddScoped<PropertyImageService>();
 builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddScoped<MediaService>();
+builder.Services.AddScoped<TourRoomService>();
 builder.Services.AddScoped<LocalMediaStorageService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
@@ -135,7 +137,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -634,6 +636,161 @@ app.MapDelete("/api/properties/{propertyId:guid}/images/{imageId:guid}", async (
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/properties/{propertyId:guid}/tour/rooms", async (
+    Guid propertyId,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var rooms = await tourRoomService.ListAsync(propertyId, cancellationToken);
+
+    if (rooms is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_NOT_FOUND",
+                message = "Property was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = rooms
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/properties/{propertyId:guid}/tour/rooms", async (
+    Guid propertyId,
+    CreateTourRoomRequest request,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourRoomService.CreateAsync(propertyId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourRoomErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapGet("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourRoomService.GetAsync(propertyId, roomId, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourRoomErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPut("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    UpdateTourRoomRequest request,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourRoomService.UpdateAsync(propertyId, roomId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourRoomErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPut("/api/properties/{propertyId:guid}/tour/rooms/reorder", async (
+    Guid propertyId,
+    ReorderTourRoomsRequest request,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourRoomService.ReorderAsync(propertyId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourRoomErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPatch("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}/start", async (
+    Guid propertyId,
+    Guid roomId,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await tourRoomService.SetStartRoomAsync(propertyId, roomId, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateTourRoomErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapDelete("/api/properties/{propertyId:guid}/tour/rooms/{roomId:guid}", async (
+    Guid propertyId,
+    Guid roomId,
+    TourRoomService tourRoomService,
+    CancellationToken cancellationToken) =>
+{
+    var deleted = await tourRoomService.SoftDeleteAsync(propertyId, roomId, cancellationToken);
+
+    if (!deleted)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "TOUR_ROOM_NOT_FOUND",
+                message = "Tour room was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -687,6 +844,23 @@ static IResult CreateMediaErrorResult<T>(MediaServiceResult<T> result)
 }
 
 static IResult CreatePropertyImageErrorResult<T>(PropertyImageServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode == "VALIDATION_ERROR"
+        ? StatusCodes.Status400BadRequest
+        : StatusCodes.Status404NotFound;
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
+}
+
+static IResult CreateTourRoomErrorResult<T>(TourRoomServiceResult<T> result)
 {
     var statusCode = result.ErrorCode == "VALIDATION_ERROR"
         ? StatusCodes.Status400BadRequest

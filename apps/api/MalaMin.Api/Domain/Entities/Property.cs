@@ -49,4 +49,6 @@ public class Property
     public DateTimeOffset? DeletedAt { get; set; }
 
     public ICollection<PropertyImage> Images { get; set; } = [];
+
+    public ICollection<TourRoom> TourRooms { get; set; } = [];
 }

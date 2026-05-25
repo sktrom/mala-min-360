@@ -15,6 +15,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<PropertyImage> PropertyImages => Set<PropertyImage>();
 
+    public DbSet<TourRoom> TourRooms => Set<TourRoom>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -291,6 +293,57 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(propertyImage => propertyImage.MediaFile)
                 .WithMany(mediaFile => mediaFile.PropertyImages)
                 .HasForeignKey(propertyImage => propertyImage.MediaFileId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TourRoom>(entity =>
+        {
+            entity.ToTable("TourRooms");
+
+            entity.HasKey(tourRoom => tourRoom.Id);
+
+            entity.Property(tourRoom => tourRoom.TenantId)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.PropertyId)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.Name)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(tourRoom => tourRoom.PanoramaMediaId)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.SortOrder)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.IsStartRoom)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.CreatedAt)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.UpdatedAt)
+                .IsRequired();
+
+            entity.Property(tourRoom => tourRoom.DeletedAt)
+                .IsRequired(false);
+
+            entity.HasIndex(tourRoom => tourRoom.TenantId);
+            entity.HasIndex(tourRoom => tourRoom.PropertyId);
+            entity.HasIndex(tourRoom => tourRoom.PanoramaMediaId);
+            entity.HasIndex(tourRoom => new { tourRoom.PropertyId, tourRoom.SortOrder });
+            entity.HasIndex(tourRoom => new { tourRoom.PropertyId, tourRoom.IsStartRoom });
+
+            entity.HasOne(tourRoom => tourRoom.Property)
+                .WithMany(property => property.TourRooms)
+                .HasForeignKey(tourRoom => tourRoom.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(tourRoom => tourRoom.PanoramaMedia)
+                .WithMany(mediaFile => mediaFile.TourRooms)
+                .HasForeignKey(tourRoom => tourRoom.PanoramaMediaId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

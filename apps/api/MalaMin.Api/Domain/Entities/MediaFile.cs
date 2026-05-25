@@ -35,4 +35,6 @@ public class MediaFile
     public DateTimeOffset? DeletedAt { get; set; }
 
     public ICollection<PropertyImage> PropertyImages { get; set; } = [];
+
+    public ICollection<TourRoom> TourRooms { get; set; } = [];
 }
