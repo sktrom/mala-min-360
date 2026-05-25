@@ -123,6 +123,18 @@ Authentication is not required for public property viewing.
 
 Future media and 360 tour data will be added later.
 
+## Public Tour API
+
+Public tour data is read-only.
+
+The public tour endpoint uses tenantSlug and propertySlug.
+
+Only published, non-deleted properties expose public tour data.
+
+Authentication is not required for public tour viewing.
+
+The endpoint returns rooms, panorama URLs, and hotspots for the future frontend 360 viewer.
+
 ## Security
 
 Rules:

@@ -31,6 +31,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PropertyService>();
 builder.Services.AddScoped<PropertyImageService>();
 builder.Services.AddScoped<PublicPropertyService>();
+builder.Services.AddScoped<PublicTourService>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<TourRoomService>();
 builder.Services.AddScoped<TourHotspotService>();
@@ -171,6 +172,37 @@ app.MapGet("/api/public/properties/{tenantSlug}/{propertySlug}", async (
     {
         success = true,
         data = property
+    });
+});
+
+app.MapGet("/api/public/properties/{tenantSlug}/{propertySlug}/tour", async (
+    string tenantSlug,
+    string propertySlug,
+    PublicTourService publicTourService,
+    CancellationToken cancellationToken) =>
+{
+    var tour = await publicTourService.GetPublishedTourAsync(
+        tenantSlug,
+        propertySlug,
+        cancellationToken);
+
+    if (tour is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PUBLIC_TOUR_NOT_FOUND",
+                message = "Tour was not found or property is not published."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = tour
     });
 });
 

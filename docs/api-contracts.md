@@ -554,9 +554,9 @@ GET /api/stats/properties/{propertyId}
 
 Implemented:
 - GET /api/public/properties/{tenantSlug}/{propertySlug}
+- GET /api/public/properties/{tenantSlug}/{propertySlug}/tour
 
 Not implemented yet:
-- GET  /api/public/properties/{tenantSlug}/{propertySlug}/tour
 - POST /api/public/properties/{propertyId}/track-view
 - POST /api/public/properties/{propertyId}/track-tour-view
 - POST /api/public/properties/{propertyId}/track-whatsapp-click
@@ -618,8 +618,68 @@ Not found response:
 }
 ```
 
+### GET /api/public/properties/{tenantSlug}/{propertySlug}/tour
+
+Public endpoint. No Authorization header is required.
+
+Returns read-only 360 tour data for published, non-deleted properties only.
+
+The response includes rooms, panorama URLs, and room hotspots. It does not expose TenantId, DeletedAt, StorageKey, internal user data, or authentication data.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "propertyId": "...",
+    "propertyTitle": "Public Tour Test Apartment",
+    "propertySlug": "public-tour-test-apartment",
+    "tenantName": "Demo Real Estate Agency",
+    "tenantSlug": "demo-agency",
+    "startRoomId": "...",
+    "rooms": [
+      {
+        "id": "...",
+        "name": "Living Room",
+        "panoramaUrl": "/uploads/...",
+        "originalFileName": "panorama.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 12345,
+        "width": null,
+        "height": null,
+        "sortOrder": 0,
+        "isStartRoom": true,
+        "hotspots": [
+          {
+            "id": "...",
+            "roomId": "...",
+            "targetRoomId": "...",
+            "type": "Navigate",
+            "label": "Go to Kitchen",
+            "yaw": 45.25,
+            "pitch": -5.50
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Not found response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "PUBLIC_TOUR_NOT_FOUND",
+    "message": "Tour was not found or property is not published."
+  }
+}
+```
+
 <!-- Future endpoints:
-GET  /api/public/properties/{tenantSlug}/{propertySlug}/tour
 POST /api/public/properties/{propertyId}/track-view
 POST /api/public/properties/{propertyId}/track-tour-view
 POST /api/public/properties/{propertyId}/track-whatsapp-click
