@@ -312,11 +312,81 @@ Soft deletes media metadata by setting DeletedAt. This step does not physically 
 
 ## Property Images
 
-GET    /api/properties/{propertyId}/images
-POST   /api/properties/{propertyId}/images
-PUT    /api/properties/{propertyId}/images/reorder
-DELETE /api/properties/{propertyId}/images/{imageId}
-PATCH  /api/properties/{propertyId}/images/{imageId}/cover
+Implemented:
+- GET    /api/properties/{propertyId}/images
+- POST   /api/properties/{propertyId}/images
+- PUT    /api/properties/{propertyId}/images/reorder
+- PATCH  /api/properties/{propertyId}/images/{imageId}/cover
+- DELETE /api/properties/{propertyId}/images/{imageId}
+
+All property image endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Property image operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+Only current tenant MediaFiles with fileType NormalImage can be linked as property images.
+
+### POST /api/properties/{propertyId}/images
+
+Request:
+
+```json
+{
+  "mediaFileId": "...",
+  "sortOrder": 0,
+  "isCover": true
+}
+```
+
+The first linked image is automatically set as cover.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "...",
+    "propertyId": "...",
+    "mediaFileId": "...",
+    "url": "/uploads/...",
+    "originalFileName": "test-image.jpg",
+    "mimeType": "image/jpeg",
+    "sizeBytes": 12345,
+    "width": null,
+    "height": null,
+    "sortOrder": 0,
+    "isCover": true,
+    "createdAt": "..."
+  }
+}
+```
+
+The response does not expose TenantId.
+
+### PUT /api/properties/{propertyId}/images/reorder
+
+Request:
+
+```json
+{
+  "images": [
+    { "propertyImageId": "...", "sortOrder": 0 },
+    { "propertyImageId": "...", "sortOrder": 1 }
+  ]
+}
+```
+
+### PATCH /api/properties/{propertyId}/images/{imageId}/cover
+
+Sets one property image as cover and unsets the other cover images for the same property.
+
+### DELETE /api/properties/{propertyId}/images/{imageId}
+
+Soft deletes the property image link only. It does not delete MediaFile metadata or the physical file.
 
 ## Tour Rooms
 

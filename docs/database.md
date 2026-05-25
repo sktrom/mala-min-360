@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, Properties, and MediaFiles tables.
+The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, and PropertyImages tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -162,9 +162,15 @@ ProcessingStatus values:
 - Completed
 - Failed
 
-## PropertyImages
+## PropertyImages (Implemented)
 
 Links normal images to properties.
+
+PropertyImages links Properties to MediaFiles.
+
+Delete operations soft delete the link only by setting DeletedAt.
+
+MediaFile metadata and physical files are not deleted by PropertyImages operations.
 
 Fields:
 - Id
@@ -174,6 +180,8 @@ Fields:
 - SortOrder
 - IsCover
 - CreatedAt
+- UpdatedAt
+- DeletedAt
 
 ## TourRooms
 
@@ -268,6 +276,11 @@ Recommended indexes:
 - MediaFiles.TenantId
 - MediaFiles.FileType
 - MediaFiles.ProcessingStatus
+- PropertyImages.TenantId
+- PropertyImages.PropertyId
+- PropertyImages.MediaFileId
+- PropertyImages.PropertyId + SortOrder
+- PropertyImages.PropertyId + IsCover
 - TourRooms.PropertyId
 - TourHotspots.RoomId
 - PropertyStats.PropertyId + StatDate unique
@@ -277,6 +290,7 @@ Recommended indexes:
 Use DeletedAt for business entities such as:
 - Properties
 - MediaFiles if needed
+- PropertyImages
 - TourRooms if needed
 
 Do not physically delete business data unless explicitly required.

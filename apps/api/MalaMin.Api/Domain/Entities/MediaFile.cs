@@ -33,4 +33,6 @@ public class MediaFile
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public ICollection<PropertyImage> PropertyImages { get; set; } = [];
 }

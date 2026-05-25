@@ -4,6 +4,7 @@ using System.Text;
 using MalaMin.Api.Application.Auth;
 using MalaMin.Api.Application.Common;
 using MalaMin.Api.Application.Media;
+using MalaMin.Api.Application.PropertyImages;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Tenants;
@@ -26,6 +27,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PropertyService>();
+builder.Services.AddScoped<PropertyImageService>();
 builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<LocalMediaStorageService>();
@@ -133,7 +135,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -518,6 +520,120 @@ app.MapDelete("/api/media/{id:guid}", async (
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/properties/{propertyId:guid}/images", async (
+    Guid propertyId,
+    PropertyImageService propertyImageService,
+    CancellationToken cancellationToken) =>
+{
+    var images = await propertyImageService.ListAsync(propertyId, cancellationToken);
+
+    if (images is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_NOT_FOUND",
+                message = "Property was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = images
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/properties/{propertyId:guid}/images", async (
+    Guid propertyId,
+    AddPropertyImageRequest request,
+    PropertyImageService propertyImageService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyImageService.AddAsync(propertyId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreatePropertyImageErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapPut("/api/properties/{propertyId:guid}/images/reorder", async (
+    Guid propertyId,
+    ReorderPropertyImagesRequest request,
+    PropertyImageService propertyImageService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyImageService.ReorderAsync(propertyId, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreatePropertyImageErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapPatch("/api/properties/{propertyId:guid}/images/{imageId:guid}/cover", async (
+    Guid propertyId,
+    Guid imageId,
+    PropertyImageService propertyImageService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await propertyImageService.SetCoverAsync(propertyId, imageId, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreatePropertyImageErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapDelete("/api/properties/{propertyId:guid}/images/{imageId:guid}", async (
+    Guid propertyId,
+    Guid imageId,
+    PropertyImageService propertyImageService,
+    CancellationToken cancellationToken) =>
+{
+    var deleted = await propertyImageService.SoftDeleteAsync(propertyId, imageId, cancellationToken);
+
+    if (!deleted)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_IMAGE_NOT_FOUND",
+                message = "Property image was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true
+    });
+}).RequireAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/api/dev/seed-info", () => Results.Json(new
@@ -568,4 +684,21 @@ static IResult CreateMediaErrorResult<T>(MediaServiceResult<T> result)
             message = result.ErrorMessage
         }
     }, statusCode: StatusCodes.Status400BadRequest);
+}
+
+static IResult CreatePropertyImageErrorResult<T>(PropertyImageServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode == "VALIDATION_ERROR"
+        ? StatusCodes.Status400BadRequest
+        : StatusCodes.Status404NotFound;
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
 }

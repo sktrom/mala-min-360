@@ -13,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
 
+    public DbSet<PropertyImage> PropertyImages => Set<PropertyImage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -242,6 +244,53 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(mediaFile => mediaFile.Tenant)
                 .WithMany(tenant => tenant.MediaFiles)
                 .HasForeignKey(mediaFile => mediaFile.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PropertyImage>(entity =>
+        {
+            entity.ToTable("PropertyImages");
+
+            entity.HasKey(propertyImage => propertyImage.Id);
+
+            entity.Property(propertyImage => propertyImage.TenantId)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.PropertyId)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.MediaFileId)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.SortOrder)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.IsCover)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.CreatedAt)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.UpdatedAt)
+                .IsRequired();
+
+            entity.Property(propertyImage => propertyImage.DeletedAt)
+                .IsRequired(false);
+
+            entity.HasIndex(propertyImage => propertyImage.TenantId);
+            entity.HasIndex(propertyImage => propertyImage.PropertyId);
+            entity.HasIndex(propertyImage => propertyImage.MediaFileId);
+            entity.HasIndex(propertyImage => new { propertyImage.PropertyId, propertyImage.SortOrder });
+            entity.HasIndex(propertyImage => new { propertyImage.PropertyId, propertyImage.IsCover });
+
+            entity.HasOne(propertyImage => propertyImage.Property)
+                .WithMany(property => property.Images)
+                .HasForeignKey(propertyImage => propertyImage.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(propertyImage => propertyImage.MediaFile)
+                .WithMany(mediaFile => mediaFile.PropertyImages)
+                .HasForeignKey(propertyImage => propertyImage.MediaFileId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

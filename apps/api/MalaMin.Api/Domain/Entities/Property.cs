@@ -47,4 +47,6 @@ public class Property
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset? DeletedAt { get; set; }
+
+    public ICollection<PropertyImage> Images { get; set; } = [];
 }
