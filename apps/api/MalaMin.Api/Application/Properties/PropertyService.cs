@@ -59,6 +59,12 @@ public sealed class PropertyService(AppDbContext db, ITenantContext tenantContex
         }
 
         var tenantId = tenantContext.TenantId;
+
+        if (await IsPropertyLimitExceededAsync(tenantId, cancellationToken))
+        {
+            return PropertyServiceResult<PropertyResponse>.PlanLimitExceeded("Property limit exceeded for current plan.");
+        }
+
         var now = DateTimeOffset.UtcNow;
         var property = new Property
         {
@@ -193,6 +199,31 @@ public sealed class PropertyService(AppDbContext db, ITenantContext tenantContex
                     && property.TenantId == tenantId
                     && property.DeletedAt == null,
                 cancellationToken);
+    }
+
+    private async Task<bool> IsPropertyLimitExceededAsync(Guid tenantId, CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var maxProperties = await db.Subscriptions
+            .Where(subscription => subscription.TenantId == tenantId
+                && subscription.StartsAt <= now
+                && subscription.EndsAt >= now
+                && (subscription.Status == SubscriptionStatuses.Trial
+                    || subscription.Status == SubscriptionStatuses.Active))
+            .OrderByDescending(subscription => subscription.EndsAt)
+            .Select(subscription => (int?)subscription.Plan.MaxProperties)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (!maxProperties.HasValue)
+        {
+            return false;
+        }
+
+        var currentProperties = await db.Properties.CountAsync(
+            property => property.TenantId == tenantId && property.DeletedAt == null,
+            cancellationToken);
+
+        return currentProperties >= maxProperties.Value;
     }
 
     private async Task<string> GenerateUniqueSlugAsync(
@@ -376,5 +407,10 @@ public sealed record PropertyServiceResult<T>(T? Data, string? ErrorCode, string
     public static PropertyServiceResult<T> Validation(string message)
     {
         return new PropertyServiceResult<T>(default, "VALIDATION_ERROR", message);
+    }
+
+    public static PropertyServiceResult<T> PlanLimitExceeded(string message)
+    {
+        return new PropertyServiceResult<T>(default, "PLAN_LIMIT_EXCEEDED", message);
     }
 }

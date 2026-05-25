@@ -21,6 +21,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<PropertyStats> PropertyStats => Set<PropertyStats>();
 
+    public DbSet<Plan> Plans => Set<Plan>();
+
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -449,6 +453,90 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(stats => stats.Property)
                 .WithMany(property => property.Stats)
                 .HasForeignKey(stats => stats.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Plan>(entity =>
+        {
+            entity.ToTable("Plans");
+
+            entity.HasKey(plan => plan.Id);
+
+            entity.Property(plan => plan.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(plan => plan.Code)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(plan => plan.Code)
+                .IsUnique();
+
+            entity.Property(plan => plan.MaxProperties)
+                .IsRequired();
+
+            entity.Property(plan => plan.MaxTours)
+                .IsRequired();
+
+            entity.Property(plan => plan.StorageLimitMb)
+                .IsRequired();
+
+            entity.Property(plan => plan.MonthlyPrice)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            entity.Property(plan => plan.IsActive)
+                .IsRequired();
+
+            entity.Property(plan => plan.CreatedAt)
+                .IsRequired();
+
+            entity.Property(plan => plan.UpdatedAt)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<Subscription>(entity =>
+        {
+            entity.ToTable("Subscriptions");
+
+            entity.HasKey(subscription => subscription.Id);
+
+            entity.Property(subscription => subscription.TenantId)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.PlanId)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.Status)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(subscription => subscription.StartsAt)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.EndsAt)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.CreatedAt)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.UpdatedAt)
+                .IsRequired();
+
+            entity.HasIndex(subscription => subscription.TenantId);
+            entity.HasIndex(subscription => subscription.PlanId);
+            entity.HasIndex(subscription => subscription.Status);
+            entity.HasIndex(subscription => subscription.EndsAt);
+
+            entity.HasOne(subscription => subscription.Tenant)
+                .WithMany(tenant => tenant.Subscriptions)
+                .HasForeignKey(subscription => subscription.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(subscription => subscription.Plan)
+                .WithMany(plan => plan.Subscriptions)
+                .HasForeignKey(subscription => subscription.PlanId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

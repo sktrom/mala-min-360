@@ -29,4 +29,6 @@ public class Tenant
     public ICollection<Property> Properties { get; set; } = [];
 
     public ICollection<MediaFile> MediaFiles { get; set; } = [];
+
+    public ICollection<Subscription> Subscriptions { get; set; } = [];
 }

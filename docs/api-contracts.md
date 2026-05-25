@@ -133,6 +133,47 @@ Success response:
 }
 ```
 
+## Subscription
+
+Implemented:
+- GET /api/subscription/me
+
+### GET /api/subscription/me
+
+Requires:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Returns the current tenant subscription, plan limits, and current usage.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "Trial",
+    "startsAt": "...",
+    "endsAt": "...",
+    "plan": {
+      "id": "...",
+      "name": "Trial",
+      "code": "trial",
+      "maxProperties": 3,
+      "maxTours": 3,
+      "storageLimitMb": 500,
+      "monthlyPrice": 0,
+      "isActive": true
+    },
+    "currentProperties": 0,
+    "currentTours": 0,
+    "currentStorageMb": 0
+  }
+}
+```
+
 Tenant not found response:
 
 ```json
@@ -163,6 +204,8 @@ Authorization: Bearer <accessToken>
 ```
 
 Property operations are scoped by the current tenant. TenantId is resolved from JWT claims and must never be accepted from the frontend.
+
+Property creation enforces MaxProperties from the current tenant subscription. Exceeding the limit returns 403 with code PLAN_LIMIT_EXCEEDED.
 
 ### POST /api/properties
 
@@ -772,17 +815,83 @@ Not found response:
 
 ## Admin
 
-GET   /api/admin/tenants
-GET   /api/admin/tenants/{id}
-PATCH /api/admin/tenants/{id}/status
+Implemented:
+- GET   /api/admin/plans
+- POST  /api/admin/plans
+- GET   /api/admin/plans/{id}
+- PUT   /api/admin/plans/{id}
+- GET   /api/admin/subscriptions
+- POST  /api/admin/subscriptions
+- PATCH /api/admin/subscriptions/{id}/status
 
-GET   /api/admin/plans
-POST  /api/admin/plans
-PUT   /api/admin/plans/{id}
+All admin endpoints require:
 
-GET   /api/admin/subscriptions
-POST  /api/admin/subscriptions
-PATCH /api/admin/subscriptions/{id}/status
+```text
+Authorization: Bearer <SuperAdmin accessToken>
+```
+
+Users without Role = SuperAdmin receive 403.
+
+### POST /api/admin/plans
+
+Request:
+
+```json
+{
+  "name": "Starter",
+  "code": "starter",
+  "maxProperties": 25,
+  "maxTours": 25,
+  "storageLimitMb": 5120,
+  "monthlyPrice": 0
+}
+```
+
+### PUT /api/admin/plans/{id}
+
+Request:
+
+```json
+{
+  "name": "Starter",
+  "maxProperties": 25,
+  "maxTours": 25,
+  "storageLimitMb": 5120,
+  "monthlyPrice": 0,
+  "isActive": true
+}
+```
+
+### POST /api/admin/subscriptions
+
+Request:
+
+```json
+{
+  "tenantId": "...",
+  "planId": "...",
+  "status": "Active",
+  "startsAt": "...",
+  "endsAt": "..."
+}
+```
+
+### PATCH /api/admin/subscriptions/{id}/status
+
+Request:
+
+```json
+{
+  "status": "Suspended"
+}
+```
+
+Not implemented yet:
+- GET   /api/admin/tenants
+- GET   /api/admin/tenants/{id}
+- PATCH /api/admin/tenants/{id}/status
+- Online payments
+- Invoices
 
 ## Response Rules
 

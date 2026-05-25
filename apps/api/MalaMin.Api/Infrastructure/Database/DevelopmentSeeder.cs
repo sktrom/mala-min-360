@@ -15,6 +15,45 @@ public static class DevelopmentSeeder
     {
         var db = services.GetRequiredService<AppDbContext>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher<AppUser>>();
+        var trialPlan = await EnsurePlanAsync(
+            db,
+            "Trial",
+            "trial",
+            maxProperties: 3,
+            maxTours: 3,
+            storageLimitMb: 500,
+            monthlyPrice: 0,
+            cancellationToken);
+
+        await EnsurePlanAsync(
+            db,
+            "Starter",
+            "starter",
+            maxProperties: 25,
+            maxTours: 25,
+            storageLimitMb: 5120,
+            monthlyPrice: 0,
+            cancellationToken);
+
+        await EnsurePlanAsync(
+            db,
+            "Pro",
+            "pro",
+            maxProperties: 100,
+            maxTours: 100,
+            storageLimitMb: 20480,
+            monthlyPrice: 0,
+            cancellationToken);
+
+        await EnsurePlanAsync(
+            db,
+            "Business",
+            "business",
+            maxProperties: 300,
+            maxTours: 300,
+            storageLimitMb: 76800,
+            monthlyPrice: 0,
+            cancellationToken);
 
         var tenant = await db.Tenants
             .SingleOrDefaultAsync(existingTenant => existingTenant.Slug == DemoTenantSlug, cancellationToken);
@@ -51,6 +90,59 @@ public static class DevelopmentSeeder
             db.Users.Add(user);
         }
 
+        var subscriptionExists = await db.Subscriptions
+            .AnyAsync(existingSubscription => existingSubscription.TenantId == tenant.Id, cancellationToken);
+
+        if (!subscriptionExists)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            db.Subscriptions.Add(new Subscription
+            {
+                Tenant = tenant,
+                Plan = trialPlan,
+                Status = SubscriptionStatuses.Trial,
+                StartsAt = now,
+                EndsAt = now.AddDays(14),
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+        }
+
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    private static async Task<Plan> EnsurePlanAsync(
+        AppDbContext db,
+        string name,
+        string code,
+        int maxProperties,
+        int maxTours,
+        long storageLimitMb,
+        decimal monthlyPrice,
+        CancellationToken cancellationToken)
+    {
+        var plan = await db.Plans
+            .SingleOrDefaultAsync(existingPlan => existingPlan.Code == code, cancellationToken);
+
+        if (plan is not null)
+        {
+            return plan;
+        }
+
+        plan = new Plan
+        {
+            Name = name,
+            Code = code,
+            MaxProperties = maxProperties,
+            MaxTours = maxTours,
+            StorageLimitMb = storageLimitMb,
+            MonthlyPrice = monthlyPrice,
+            IsActive = true
+        };
+
+        db.Plans.Add(plan);
+
+        return plan;
     }
 }

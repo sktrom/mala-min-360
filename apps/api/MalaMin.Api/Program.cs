@@ -4,13 +4,16 @@ using System.Text;
 using MalaMin.Api.Application.Auth;
 using MalaMin.Api.Application.Common;
 using MalaMin.Api.Application.Media;
+using MalaMin.Api.Application.Plans;
 using MalaMin.Api.Application.PropertyImages;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
 using MalaMin.Api.Application.Stats;
+using MalaMin.Api.Application.Subscriptions;
 using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Application.TourHotspots;
 using MalaMin.Api.Application.TourRooms;
+using MalaMin.Api.Domain.Constants;
 using MalaMin.Api.Domain.Entities;
 using MalaMin.Api.Infrastructure.Auth;
 using MalaMin.Api.Infrastructure.Database;
@@ -31,10 +34,12 @@ builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PropertyService>();
 builder.Services.AddScoped<PropertyImageService>();
+builder.Services.AddScoped<PlanService>();
 builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddScoped<PublicTourService>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<StatsService>();
+builder.Services.AddScoped<SubscriptionService>();
 builder.Services.AddScoped<TourRoomService>();
 builder.Services.AddScoped<TourHotspotService>();
 builder.Services.AddScoped<LocalMediaStorageService>();
@@ -142,7 +147,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms", "TourHotspots", "PropertyStats" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms", "TourHotspots", "PropertyStats", "Plans", "Subscriptions" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -348,6 +353,32 @@ app.MapGet("/api/tenant/me", async (
     });
 }).RequireAuthorization();
 
+app.MapGet("/api/subscription/me", async (
+    SubscriptionService subscriptionService,
+    CancellationToken cancellationToken) =>
+{
+    var subscription = await subscriptionService.GetCurrentAsync(cancellationToken);
+
+    if (subscription is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "SUBSCRIPTION_NOT_FOUND",
+                message = "Current subscription was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = subscription
+    });
+}).RequireAuthorization();
+
 app.MapGet("/api/properties", async (
     PropertyService propertyService,
     CancellationToken cancellationToken) =>
@@ -450,6 +481,179 @@ app.MapDelete("/api/properties/{id:guid}", async (
     return Results.Json(new
     {
         success = true
+    });
+}).RequireAuthorization();
+
+app.MapGet("/api/admin/plans", async (
+    ClaimsPrincipal user,
+    PlanService planService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var plans = await planService.ListAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = plans
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/admin/plans", async (
+    ClaimsPrincipal user,
+    CreatePlanRequest request,
+    PlanService planService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var result = await planService.CreateAsync(request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreatePlanErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapGet("/api/admin/plans/{id:guid}", async (
+    ClaimsPrincipal user,
+    Guid id,
+    PlanService planService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var plan = await planService.GetAsync(id, cancellationToken);
+
+    if (plan is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PLAN_NOT_FOUND",
+                message = "Plan was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = plan
+    });
+}).RequireAuthorization();
+
+app.MapPut("/api/admin/plans/{id:guid}", async (
+    ClaimsPrincipal user,
+    Guid id,
+    UpdatePlanRequest request,
+    PlanService planService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var result = await planService.UpdateAsync(id, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreatePlanErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapGet("/api/admin/subscriptions", async (
+    ClaimsPrincipal user,
+    SubscriptionService subscriptionService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var subscriptions = await subscriptionService.ListAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = subscriptions
+    });
+}).RequireAuthorization();
+
+app.MapPost("/api/admin/subscriptions", async (
+    ClaimsPrincipal user,
+    CreateSubscriptionRequest request,
+    SubscriptionService subscriptionService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var result = await subscriptionService.CreateAsync(request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateSubscriptionErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
+    }, statusCode: StatusCodes.Status201Created);
+}).RequireAuthorization();
+
+app.MapPatch("/api/admin/subscriptions/{id:guid}/status", async (
+    ClaimsPrincipal user,
+    Guid id,
+    UpdateSubscriptionStatusRequest request,
+    SubscriptionService subscriptionService,
+    CancellationToken cancellationToken) =>
+{
+    if (!IsSuperAdmin(user))
+    {
+        return CreateForbiddenResult();
+    }
+
+    var result = await subscriptionService.UpdateStatusAsync(id, request, cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return CreateSubscriptionErrorResult(result);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = result.Data
     });
 }).RequireAuthorization();
 
@@ -1059,7 +1263,27 @@ app.Run();
 
 static IResult CreateErrorResult<T>(PropertyServiceResult<T> result)
 {
-    var statusCode = result.ErrorCode == "PROPERTY_NOT_FOUND"
+    var statusCode = result.ErrorCode switch
+    {
+        "PROPERTY_NOT_FOUND" => StatusCodes.Status404NotFound,
+        "PLAN_LIMIT_EXCEEDED" => StatusCodes.Status403Forbidden,
+        _ => StatusCodes.Status400BadRequest
+    };
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
+}
+
+static IResult CreatePlanErrorResult<T>(PlanServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode == "PLAN_NOT_FOUND"
         ? StatusCodes.Status404NotFound
         : StatusCodes.Status400BadRequest;
 
@@ -1072,6 +1296,42 @@ static IResult CreateErrorResult<T>(PropertyServiceResult<T> result)
             message = result.ErrorMessage
         }
     }, statusCode: statusCode);
+}
+
+static IResult CreateSubscriptionErrorResult<T>(SubscriptionServiceResult<T> result)
+{
+    var statusCode = result.ErrorCode is "TENANT_NOT_FOUND" or "PLAN_NOT_FOUND" or "SUBSCRIPTION_NOT_FOUND"
+        ? StatusCodes.Status404NotFound
+        : StatusCodes.Status400BadRequest;
+
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = result.ErrorCode,
+            message = result.ErrorMessage
+        }
+    }, statusCode: statusCode);
+}
+
+static IResult CreateForbiddenResult()
+{
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = "FORBIDDEN",
+            message = "SuperAdmin role is required."
+        }
+    }, statusCode: StatusCodes.Status403Forbidden);
+}
+
+static bool IsSuperAdmin(ClaimsPrincipal user)
+{
+    return string.Equals(user.FindFirstValue("role"), UserRoles.SuperAdmin, StringComparison.Ordinal)
+        || string.Equals(user.FindFirstValue(ClaimTypes.Role), UserRoles.SuperAdmin, StringComparison.Ordinal);
 }
 
 static IResult CreatePublicPropertyNotFoundResult()

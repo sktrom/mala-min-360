@@ -145,6 +145,16 @@ The tracking foundation does not store visitor identity data, IP addresses, user
 
 Protected reporting endpoints are tenant-scoped and require authentication.
 
+## Manual Subscriptions
+
+Plans define limits for properties, tours, and storage.
+
+Tenant subscriptions are manually managed by SuperAdmin users.
+
+Online payments, invoices, and automatic recurring billing are not part of the MVP.
+
+Plan limits are enforced server-side. Property creation currently enforces MaxProperties for the current tenant subscription.
+
 ## Security
 
 Rules:

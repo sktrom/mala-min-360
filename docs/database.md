@@ -6,11 +6,13 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, TourRooms, TourHotspots, and PropertyStats tables.
+The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, TourRooms, TourHotspots, PropertyStats, Plans, and Subscriptions tables.
 
 More entities will be added step by step in later implementation steps.
 
 Authentication foundation is implemented for development login testing.
+
+Manual subscriptions are implemented for MVP billing control. Online payments, payment gateways, invoices, and automatic renewals are not implemented.
 
 Development startup seeds one demo tenant and owner user when running in Development:
 - Tenant: Demo Real Estate Agency
@@ -258,18 +260,29 @@ Fields:
 
 Represents subscription plans.
 
+Plans are implemented and define server-side limits.
+
 Fields:
 - Id
 - Name
+- Code
 - MaxProperties
 - MaxTours
 - StorageLimitMb
 - MonthlyPrice
 - IsActive
+- CreatedAt
+- UpdatedAt
 
 ## Subscriptions
 
 Represents manual subscriptions.
+
+Subscriptions are implemented and manually managed.
+
+Property creation enforces MaxProperties from the current tenant subscription.
+
+Storage limits are reported through subscription usage but are not enforced yet.
 
 Fields:
 - Id
@@ -316,6 +329,11 @@ Recommended indexes:
 - PropertyStats.PropertyId
 - PropertyStats.StatDate
 - PropertyStats.PropertyId + StatDate unique
+- Plans.Code unique
+- Subscriptions.TenantId
+- Subscriptions.PlanId
+- Subscriptions.Status
+- Subscriptions.EndsAt
 
 ## Soft Delete Rule
 
