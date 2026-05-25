@@ -51,4 +51,6 @@ public class Property
     public ICollection<PropertyImage> Images { get; set; } = [];
 
     public ICollection<TourRoom> TourRooms { get; set; } = [];
+
+    public ICollection<PropertyStats> Stats { get; set; } = [];
 }

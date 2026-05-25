@@ -547,16 +547,70 @@ The response does not expose TenantId.
 
 ## Stats
 
-GET /api/stats/overview
-GET /api/stats/properties/{propertyId}
+Implemented:
+- GET /api/stats/overview
+- GET /api/stats/properties/{propertyId}
+
+All protected stats endpoints require:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+Stats responses are scoped to the current tenant.
+
+### GET /api/stats/overview
+
+Returns aggregated totals across current tenant properties.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalViews": 0,
+    "totalTourViews": 0,
+    "totalWhatsAppClicks": 0,
+    "totalQrScans": 0
+  }
+}
+```
+
+### GET /api/stats/properties/{propertyId}
+
+Returns daily stats for one current tenant property.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "propertyId": "...",
+    "propertyTitle": "Stats Test Apartment",
+    "totalViews": 1,
+    "totalTourViews": 1,
+    "totalWhatsAppClicks": 1,
+    "totalQrScans": 1,
+    "dailyStats": [
+      {
+        "statDate": "2026-05-25",
+        "views": 1,
+        "tourViews": 1,
+        "whatsAppClicks": 1,
+        "qrScans": 1
+      }
+    ]
+  }
+}
+```
 
 ## Public Property Page
 
 Implemented:
 - GET /api/public/properties/{tenantSlug}/{propertySlug}
 - GET /api/public/properties/{tenantSlug}/{propertySlug}/tour
-
-Not implemented yet:
 - POST /api/public/properties/{propertyId}/track-view
 - POST /api/public/properties/{propertyId}/track-tour-view
 - POST /api/public/properties/{propertyId}/track-whatsapp-click
@@ -679,11 +733,41 @@ Not found response:
 }
 ```
 
+### Public tracking endpoints
+
+Implemented:
+- POST /api/public/properties/{propertyId}/track-view
+- POST /api/public/properties/{propertyId}/track-tour-view
+- POST /api/public/properties/{propertyId}/track-whatsapp-click
+- POST /api/public/properties/{propertyId}/track-qr-scan
+
+Public tracking endpoints do not require Authorization.
+
+They only increment daily counters for published, non-deleted properties.
+
+They do not store IP addresses, user agents, visitor fingerprints, or per-visitor events.
+
+Success response:
+
+```json
+{
+  "success": true
+}
+```
+
+Not found response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "PUBLIC_PROPERTY_NOT_FOUND",
+    "message": "Property was not found or is not published."
+  }
+}
+```
+
 <!-- Future endpoints:
-POST /api/public/properties/{propertyId}/track-view
-POST /api/public/properties/{propertyId}/track-tour-view
-POST /api/public/properties/{propertyId}/track-whatsapp-click
-POST /api/public/properties/{propertyId}/track-qr-scan
 -->
 
 ## Admin

@@ -19,6 +19,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<TourHotspot> TourHotspots => Set<TourHotspot>();
 
+    public DbSet<PropertyStats> PropertyStats => Set<PropertyStats>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -402,6 +404,51 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(hotspot => hotspot.TargetRoom)
                 .WithMany(room => room.IncomingHotspots)
                 .HasForeignKey(hotspot => hotspot.TargetRoomId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PropertyStats>(entity =>
+        {
+            entity.ToTable("PropertyStats");
+
+            entity.HasKey(stats => stats.Id);
+
+            entity.Property(stats => stats.TenantId)
+                .IsRequired();
+
+            entity.Property(stats => stats.PropertyId)
+                .IsRequired();
+
+            entity.Property(stats => stats.StatDate)
+                .IsRequired();
+
+            entity.Property(stats => stats.Views)
+                .IsRequired();
+
+            entity.Property(stats => stats.TourViews)
+                .IsRequired();
+
+            entity.Property(stats => stats.WhatsAppClicks)
+                .IsRequired();
+
+            entity.Property(stats => stats.QrScans)
+                .IsRequired();
+
+            entity.Property(stats => stats.CreatedAt)
+                .IsRequired();
+
+            entity.Property(stats => stats.UpdatedAt)
+                .IsRequired();
+
+            entity.HasIndex(stats => stats.TenantId);
+            entity.HasIndex(stats => stats.PropertyId);
+            entity.HasIndex(stats => stats.StatDate);
+            entity.HasIndex(stats => new { stats.PropertyId, stats.StatDate })
+                .IsUnique();
+
+            entity.HasOne(stats => stats.Property)
+                .WithMany(property => property.Stats)
+                .HasForeignKey(stats => stats.PropertyId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

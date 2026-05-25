@@ -135,6 +135,16 @@ Authentication is not required for public tour viewing.
 
 The endpoint returns rooms, panorama URLs, and hotspots for the future frontend 360 viewer.
 
+## Stats Foundation
+
+Property stats are stored as daily aggregated counters.
+
+Public tracking endpoints increment counters for published, non-deleted properties.
+
+The tracking foundation does not store visitor identity data, IP addresses, user agents, or fingerprints.
+
+Protected reporting endpoints are tenant-scoped and require authentication.
+
 ## Security
 
 Rules:

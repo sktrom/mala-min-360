@@ -7,6 +7,7 @@ using MalaMin.Api.Application.Media;
 using MalaMin.Api.Application.PropertyImages;
 using MalaMin.Api.Application.Properties;
 using MalaMin.Api.Application.Public;
+using MalaMin.Api.Application.Stats;
 using MalaMin.Api.Application.Tenants;
 using MalaMin.Api.Application.TourHotspots;
 using MalaMin.Api.Application.TourRooms;
@@ -33,6 +34,7 @@ builder.Services.AddScoped<PropertyImageService>();
 builder.Services.AddScoped<PublicPropertyService>();
 builder.Services.AddScoped<PublicTourService>();
 builder.Services.AddScoped<MediaService>();
+builder.Services.AddScoped<StatsService>();
 builder.Services.AddScoped<TourRoomService>();
 builder.Services.AddScoped<TourHotspotService>();
 builder.Services.AddScoped<LocalMediaStorageService>();
@@ -140,7 +142,7 @@ app.MapGet("/api/health/database", async (AppDbContext db) =>
 app.MapGet("/api/health/model", () => Results.Json(new
 {
     success = true,
-    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms", "TourHotspots" },
+    entities = new[] { "Tenants", "Users", "Properties", "MediaFiles", "PropertyImages", "TourRooms", "TourHotspots", "PropertyStats" },
     timestamp = DateTimeOffset.UtcNow
 }));
 
@@ -204,6 +206,54 @@ app.MapGet("/api/public/properties/{tenantSlug}/{propertySlug}/tour", async (
         success = true,
         data = tour
     });
+});
+
+app.MapPost("/api/public/properties/{propertyId:guid}/track-view", async (
+    Guid propertyId,
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var tracked = await statsService.TrackViewAsync(propertyId, cancellationToken);
+
+    return tracked
+        ? Results.Json(new { success = true })
+        : CreatePublicPropertyNotFoundResult();
+});
+
+app.MapPost("/api/public/properties/{propertyId:guid}/track-tour-view", async (
+    Guid propertyId,
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var tracked = await statsService.TrackTourViewAsync(propertyId, cancellationToken);
+
+    return tracked
+        ? Results.Json(new { success = true })
+        : CreatePublicPropertyNotFoundResult();
+});
+
+app.MapPost("/api/public/properties/{propertyId:guid}/track-whatsapp-click", async (
+    Guid propertyId,
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var tracked = await statsService.TrackWhatsAppClickAsync(propertyId, cancellationToken);
+
+    return tracked
+        ? Results.Json(new { success = true })
+        : CreatePublicPropertyNotFoundResult();
+});
+
+app.MapPost("/api/public/properties/{propertyId:guid}/track-qr-scan", async (
+    Guid propertyId,
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var tracked = await statsService.TrackQrScanAsync(propertyId, cancellationToken);
+
+    return tracked
+        ? Results.Json(new { success = true })
+        : CreatePublicPropertyNotFoundResult();
 });
 
 app.MapPost("/api/auth/login", async (
@@ -438,6 +488,46 @@ app.MapPatch("/api/properties/{id:guid}/unpublish", async (
     {
         success = true,
         data = result.Data
+    });
+}).RequireAuthorization();
+
+app.MapGet("/api/stats/overview", async (
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var overview = await statsService.GetTenantOverviewAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = overview
+    });
+}).RequireAuthorization();
+
+app.MapGet("/api/stats/properties/{propertyId:guid}", async (
+    Guid propertyId,
+    StatsService statsService,
+    CancellationToken cancellationToken) =>
+{
+    var stats = await statsService.GetPropertyStatsAsync(propertyId, cancellationToken);
+
+    if (stats is null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            error = new
+            {
+                code = "PROPERTY_NOT_FOUND",
+                message = "Property was not found."
+            }
+        }, statusCode: StatusCodes.Status404NotFound);
+    }
+
+    return Results.Json(new
+    {
+        success = true,
+        data = stats
     });
 }).RequireAuthorization();
 
@@ -982,6 +1072,19 @@ static IResult CreateErrorResult<T>(PropertyServiceResult<T> result)
             message = result.ErrorMessage
         }
     }, statusCode: statusCode);
+}
+
+static IResult CreatePublicPropertyNotFoundResult()
+{
+    return Results.Json(new
+    {
+        success = false,
+        error = new
+        {
+            code = "PUBLIC_PROPERTY_NOT_FOUND",
+            message = "Property was not found or is not published."
+        }
+    }, statusCode: StatusCodes.Status404NotFound);
 }
 
 static IResult CreateMediaErrorResult<T>(MediaServiceResult<T> result)

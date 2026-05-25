@@ -6,7 +6,7 @@ PostgreSQL is the target database.
 
 ## Current Implementation
 
-The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, TourRooms, and TourHotspots tables.
+The current EF Core implementation includes the Tenants, Users, Properties, MediaFiles, PropertyImages, TourRooms, TourHotspots, and PropertyStats tables.
 
 More entities will be added step by step in later implementation steps.
 
@@ -193,8 +193,6 @@ Delete operations soft delete the room only by setting DeletedAt.
 
 MediaFile metadata and physical files are not deleted by TourRoom operations.
 
-Hotspots are not implemented yet.
-
 Fields:
 - Id
 - TenantId
@@ -217,8 +215,6 @@ Info hotspots do not require TargetRoomId.
 
 Source and target rooms must belong to the same property and tenant.
 
-Public Tour API is not implemented yet.
-
 Fields:
 - Id
 - TenantId
@@ -236,9 +232,15 @@ Type values:
 - Navigate
 - Info
 
-## PropertyStats
+## PropertyStats (Implemented)
 
-Aggregated daily stats.
+Aggregated daily property stats.
+
+PropertyStats are tenant-owned through TenantId.
+
+Stats are aggregated by UTC date using StatDate.
+
+The tracking foundation does not store IP addresses, user agents, visitor fingerprints, or per-visitor events.
 
 Fields:
 - Id
@@ -249,6 +251,8 @@ Fields:
 - TourViews
 - WhatsAppClicks
 - QrScans
+- CreatedAt
+- UpdatedAt
 
 ## Plans
 
@@ -308,6 +312,9 @@ Recommended indexes:
 - TourHotspots.RoomId
 - TourHotspots.TargetRoomId
 - TourHotspots.Type
+- PropertyStats.TenantId
+- PropertyStats.PropertyId
+- PropertyStats.StatDate
 - PropertyStats.PropertyId + StatDate unique
 
 ## Soft Delete Rule
