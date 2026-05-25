@@ -25,3 +25,30 @@ Verify the database connection:
 ```powershell
 Invoke-RestMethod http://localhost:5000/api/health/database
 ```
+
+## Local Web Frontend
+
+Install dependencies:
+
+```powershell
+cd apps/web
+npm install
+```
+
+Run the frontend:
+
+```powershell
+npm run dev
+```
+
+Build the frontend:
+
+```powershell
+npm run build
+```
+
+Local URL:
+
+```text
+http://localhost:3000
+```
