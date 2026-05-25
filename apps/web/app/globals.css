@@ -39,7 +39,9 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -225,6 +227,12 @@ h3 {
   border-color: var(--line);
 }
 
+.button.danger {
+  color: #8f3426;
+  background: rgba(198, 107, 77, 0.1);
+  border-color: rgba(198, 107, 77, 0.24);
+}
+
 .hero-visual {
   position: relative;
   z-index: 1;
@@ -407,7 +415,9 @@ h3 {
   font-weight: 800;
 }
 
-.field input {
+.field input,
+.field select,
+.field textarea {
   width: 100%;
   min-height: 48px;
   padding: 10px 12px;
@@ -415,6 +425,10 @@ h3 {
   border-radius: 8px;
   color: var(--ink);
   background: #ffffff;
+}
+
+.field textarea {
+  resize: vertical;
 }
 
 .note {
@@ -482,6 +496,16 @@ h3 {
   font-weight: 800;
 }
 
+.form-success {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(169, 197, 161, 0.52);
+  border-radius: 8px;
+  color: var(--blue);
+  background: rgba(169, 197, 161, 0.22);
+  font-weight: 800;
+}
+
 .button:disabled {
   cursor: not-allowed;
   opacity: 0.68;
@@ -501,6 +525,56 @@ h3 {
 
 .properties-list {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.properties-workspace {
+  display: grid;
+  gap: 24px;
+}
+
+.property-form-panel {
+  padding: 20px;
+}
+
+.property-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.property-form .field {
+  margin: 0;
+}
+
+.property-form .full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  align-items: flex-end;
+  grid-column: 1 / -1;
+}
+
+.section-heading.compact {
+  align-items: flex-start;
+  margin-block-end: 16px;
+}
+
+.property-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.empty-state {
+  padding: 22px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(255, 253, 248, 0.68);
+  font-weight: 800;
 }
 
 .property-card {
@@ -595,7 +669,8 @@ h3 {
 
   .feature-grid,
   .dashboard-grid,
-  .properties-list {
+  .properties-list,
+  .property-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -632,7 +707,8 @@ h3 {
 
   .feature-grid,
   .dashboard-grid,
-  .properties-list {
+  .properties-list,
+  .property-form {
     grid-template-columns: 1fr;
   }
 

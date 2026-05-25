@@ -55,3 +55,5 @@ Local URL:
 ```text
 http://localhost:3000
 ```
+
+The `/properties` frontend page uses the backend property API and requires login.

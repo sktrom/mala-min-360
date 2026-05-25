@@ -1,3 +1,5 @@
+import type { CreatePropertyRequest, Property } from "./types";
+
 export type CurrentUser = {
   id: string;
   tenantId: string;
@@ -23,6 +25,16 @@ type ApiEnvelope<T> = {
   };
 };
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+    public readonly status?: number
+  ) {
+    super(message);
+  }
+}
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:5000";
 
@@ -44,7 +56,52 @@ export async function getCurrentUser(token: string): Promise<CurrentUser> {
   });
 }
 
-async function request<T>(path: string, init: RequestInit): Promise<T> {
+export async function getProperties(token: string): Promise<Property[]> {
+  return request<Property[]>("/api/properties", {
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function createProperty(
+  token: string,
+  property: CreatePropertyRequest
+): Promise<Property> {
+  return request<Property>("/api/properties", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...createAuthHeaders(token)
+    },
+    body: JSON.stringify(property)
+  });
+}
+
+export async function publishProperty(token: string, propertyId: string): Promise<Property> {
+  return request<Property>(`/api/properties/${propertyId}/publish`, {
+    method: "PATCH",
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function unpublishProperty(token: string, propertyId: string): Promise<Property> {
+  return request<Property>(`/api/properties/${propertyId}/unpublish`, {
+    method: "PATCH",
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function deleteProperty(token: string, propertyId: string): Promise<void> {
+  await request<void>(`/api/properties/${propertyId}`, {
+    method: "DELETE",
+    headers: createAuthHeaders(token)
+  }, false);
+}
+
+async function request<T>(
+  path: string,
+  init: RequestInit,
+  requireData = true
+): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
@@ -55,9 +112,19 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
 
   const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
 
-  if (!response.ok || !payload?.success || !payload.data) {
-    throw new Error(payload?.error?.message ?? "تعذر الاتصال بالخادم. حاول مرة أخرى.");
+  if (!response.ok || !payload?.success || (requireData && payload.data === undefined)) {
+    throw new ApiError(
+      payload?.error?.message ?? "تعذر الاتصال بالخادم. حاول مرة أخرى.",
+      payload?.error?.code,
+      response.status
+    );
   }
 
-  return payload.data;
+  return payload.data as T;
+}
+
+function createAuthHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`
+  };
 }
