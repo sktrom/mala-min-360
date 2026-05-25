@@ -25,8 +25,20 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+const string DevelopmentCorsPolicy = "DevelopmentCorsPolicy";
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(DevelopmentCorsPolicy, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -92,6 +104,11 @@ if (app.Environment.IsDevelopment())
         FileProvider = new PhysicalFileProvider(storageRootPath),
         RequestPath = "/uploads"
     });
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors(DevelopmentCorsPolicy);
 }
 
 app.UseAuthentication();

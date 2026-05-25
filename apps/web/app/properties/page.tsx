@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { BrandHeader } from "@/components/BrandHeader";
+import { LogoutButton } from "@/components/LogoutButton";
 import { PropertyCard } from "@/components/PropertyCard";
+import { RequireAuth } from "@/components/RequireAuth";
 
 const properties = [
   {
@@ -25,33 +27,37 @@ const properties = [
 
 export default function PropertiesPage() {
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <BrandHeader compact />
-        <nav className="side-nav" aria-label="لوحة التحكم">
-          <Link href="/dashboard">الرئيسية</Link>
-          <Link className="active" href="/properties">
-            العقارات
-          </Link>
-          <Link href="/login">الخروج</Link>
-        </nav>
-      </aside>
-      <section className="main-content">
-        <div className="toolbar">
-          <div>
-            <p className="eyebrow">إدارة العقارات</p>
-            <h1>العقارات</h1>
+    <RequireAuth>
+      <main className="app-shell">
+        <aside className="sidebar">
+          <BrandHeader compact />
+          <nav className="side-nav" aria-label="لوحة التحكم">
+            <Link href="/dashboard">الرئيسية</Link>
+            <Link className="active" href="/properties">
+              العقارات
+            </Link>
+          </nav>
+        </aside>
+        <section className="main-content">
+          <div className="toolbar">
+            <div>
+              <p className="eyebrow">إدارة العقارات</p>
+              <h1>العقارات</h1>
+            </div>
+            <div className="actions">
+              <button className="button primary" type="button">
+                إضافة عقار
+              </button>
+              <LogoutButton />
+            </div>
           </div>
-          <button className="button primary" type="button">
-            إضافة عقار
-          </button>
-        </div>
-        <div className="grid properties-list">
-          {properties.map((property) => (
-            <PropertyCard key={property.title} {...property} />
-          ))}
-        </div>
-      </section>
-    </main>
+          <div className="grid properties-list">
+            {properties.map((property) => (
+              <PropertyCard key={property.title} {...property} />
+            ))}
+          </div>
+        </section>
+      </main>
+    </RequireAuth>
   );
 }

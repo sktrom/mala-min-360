@@ -1,7 +1,10 @@
 ﻿# Environment files
 .env
 .env.*
+apps/web/.env
+apps/web/.env.local
 !.env.example
+!apps/web/.env.example
 
 # Logs
 logs

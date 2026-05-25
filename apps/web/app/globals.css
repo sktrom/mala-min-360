@@ -472,6 +472,27 @@ h3 {
   font-weight: 900;
 }
 
+.form-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(198, 107, 77, 0.35);
+  border-radius: 8px;
+  color: #8f3426;
+  background: rgba(198, 107, 77, 0.1);
+  font-weight: 800;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.user-summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .stat-label {
   margin: 0;
   color: var(--muted);

@@ -32,8 +32,11 @@ Install dependencies:
 
 ```powershell
 cd apps/web
+copy .env.example .env.local
 npm install
 ```
+
+The backend API must be running at `http://localhost:5000`, or set `NEXT_PUBLIC_API_BASE_URL` in `apps/web/.env.local`.
 
 Run the frontend:
 
