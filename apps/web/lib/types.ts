@@ -35,3 +35,11 @@ export type CreatePropertyRequest = {
   floorNumber?: number | null;
   areaSqm: number;
 };
+
+export type StatsOverview = {
+  totalViews: number;
+  totalTourViews: number;
+  totalWhatsAppClicks: number;
+  totalQrScans: number;
+};
+

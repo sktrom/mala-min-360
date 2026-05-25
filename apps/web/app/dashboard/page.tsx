@@ -2,15 +2,8 @@ import Link from "next/link";
 import { BrandHeader } from "@/components/BrandHeader";
 import { LogoutButton } from "@/components/LogoutButton";
 import { RequireAuth } from "@/components/RequireAuth";
-import { StatCard } from "@/components/StatCard";
 import { UserSummary } from "@/components/UserSummary";
-
-const stats = [
-  { label: "عدد العقارات", value: "12" },
-  { label: "مشاهدات العقارات", value: "1,284" },
-  { label: "مشاهدات الجولة", value: "438" },
-  { label: "ضغطات واتساب", value: "76" }
-];
+import { DashboardStats } from "@/components/DashboardStats";
 
 export default function DashboardPage() {
   return (
@@ -34,13 +27,10 @@ export default function DashboardPage() {
             </div>
             <LogoutButton />
           </div>
-          <div className="grid dashboard-grid">
-            {stats.map((stat) => (
-              <StatCard key={stat.label} {...stat} />
-            ))}
-          </div>
+          <DashboardStats />
         </section>
       </main>
     </RequireAuth>
   );
 }
+
