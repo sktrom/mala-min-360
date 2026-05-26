@@ -7,6 +7,7 @@ import type {
   Property,
   PropertyImage,
   PublicProperty,
+  PublicPropertyCard,
   PublicTour,
   StatsOverview,
   TourHotspot,
@@ -308,6 +309,12 @@ export async function getPublicProperty(
       headers: {}
     }
   );
+}
+
+export async function getPublicProperties(): Promise<PublicPropertyCard[]> {
+  return request<PublicPropertyCard[]>("/api/public/properties", {
+    headers: {}
+  });
 }
 
 export async function getPublicTour(

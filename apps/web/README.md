@@ -27,6 +27,7 @@ http://localhost:3000
 
 Current routes:
 - `/`
+- `/visitor`
 - `/login`
 - `/dashboard`
 - `/properties`
@@ -38,6 +39,7 @@ Current routes:
 
 `/properties` connects to the backend property API and requires login.
 `/subscription` connects to the backend subscription API and requires login.
+`/visitor` connects to the public properties API and does not require login.
 `/a/[tenantSlug]/[propertySlug]` connects to the public property API and does not require login.
 `/a/[tenantSlug]/[propertySlug]/tour` connects to the public tour API and does not require login.
 

@@ -219,3 +219,21 @@ export type PublicTour = {
   startRoomId: string | null;
   rooms: PublicTourRoom[];
 };
+
+export type PublicPropertyCard = {
+  id: string;
+  title: string;
+  slug: string;
+  city: string;
+  areaName: string;
+  price: number;
+  currency: string;
+  listingType: string;
+  propertyType: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  areaSqm: number;
+  tenantName: string;
+  tenantSlug: string;
+  coverImageUrl: string | null;
+};

@@ -172,6 +172,19 @@ app.MapGet("/api/health/model", () => Results.Json(new
     timestamp = DateTimeOffset.UtcNow
 }));
 
+app.MapGet("/api/public/properties", async (
+    PublicPropertyService publicPropertyService,
+    CancellationToken cancellationToken) =>
+{
+    var properties = await publicPropertyService.ListPublishedPropertiesAsync(cancellationToken);
+
+    return Results.Json(new
+    {
+        success = true,
+        data = properties
+    });
+});
+
 app.MapGet("/api/public/properties/{tenantSlug}/{propertySlug}", async (
     string tenantSlug,
     string propertySlug,

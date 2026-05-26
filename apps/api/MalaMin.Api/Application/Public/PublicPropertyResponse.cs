@@ -28,3 +28,20 @@ public sealed record PublicTenantSummary(
     string? WhatsAppNumber,
     string? LogoUrl,
     string? City);
+
+public sealed record PublicPropertyCardResponse(
+    Guid Id,
+    string Title,
+    string Slug,
+    string City,
+    string AreaName,
+    decimal Price,
+    string Currency,
+    string ListingType,
+    string PropertyType,
+    int? Bedrooms,
+    int? Bathrooms,
+    int AreaSqm,
+    string TenantName,
+    string TenantSlug,
+    string? CoverImageUrl);

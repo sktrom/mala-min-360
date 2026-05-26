@@ -22,9 +22,8 @@ export function BrandHeader({ compact = false }: BrandHeaderProps) {
 
       {!compact && (
         <nav className="nav-links" aria-label="التنقل الرئيسي">
-          <Link href="/a/demo-agency/demo-property">مثال عقار</Link>
-          <Link href="/dashboard">لوحة التحكم</Link>
-          <Link href="/login">دخول</Link>
+          <Link href="/visitor">الدخول كزائر</Link>
+          <Link href="/login">دخول المكتب</Link>
         </nav>
       )}
     </header>
