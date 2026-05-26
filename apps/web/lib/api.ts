@@ -7,6 +7,7 @@ import type {
   Property,
   PropertyImage,
   PublicProperty,
+  PublicTour,
   StatsOverview,
   TourHotspot,
   TourRoom,
@@ -306,6 +307,29 @@ export async function getPublicProperty(
     {
       headers: {}
     }
+  );
+}
+
+export async function getPublicTour(
+  tenantSlug: string,
+  propertySlug: string
+): Promise<PublicTour> {
+  return request<PublicTour>(
+    `/api/public/properties/${encodeURIComponent(tenantSlug)}/${encodeURIComponent(propertySlug)}/tour`,
+    {
+      headers: {}
+    }
+  );
+}
+
+export async function trackPublicTourView(propertyId: string): Promise<void> {
+  await request<void>(
+    `/api/public/properties/${propertyId}/track-tour-view`,
+    {
+      method: "POST",
+      headers: {}
+    },
+    false
   );
 }
 

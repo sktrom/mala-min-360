@@ -185,3 +185,37 @@ export type PublicProperty = {
   coverImageUrl?: string | null;
   images?: PublicPropertyImage[];
 };
+
+export type PublicTourHotspot = {
+  id: string;
+  roomId: string;
+  targetRoomId: string | null;
+  type: "Navigate" | "Info";
+  label: string;
+  yaw: number;
+  pitch: number;
+};
+
+export type PublicTourRoom = {
+  id: string;
+  name: string;
+  panoramaUrl: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  sortOrder: number;
+  isStartRoom: boolean;
+  hotspots: PublicTourHotspot[];
+};
+
+export type PublicTour = {
+  propertyId: string;
+  propertyTitle: string;
+  propertySlug: string;
+  tenantName: string;
+  tenantSlug: string;
+  startRoomId: string | null;
+  rooms: PublicTourRoom[];
+};

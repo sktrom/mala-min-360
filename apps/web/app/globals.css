@@ -909,6 +909,106 @@ h3 {
   padding: 34px;
 }
 
+.public-tour {
+  padding-bottom: 56px;
+}
+
+.public-tour-state {
+  padding: 48px 0;
+}
+
+.public-tour-header {
+  padding: 24px 0 12px;
+}
+
+.public-tour-header h1 {
+  max-width: 900px;
+}
+
+.tour-viewer-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.tour-panorama {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--sand);
+  box-shadow: var(--shadow);
+}
+
+.tour-panorama img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+  object-fit: cover;
+}
+
+.tour-hotspot {
+  position: absolute;
+  z-index: 2;
+  max-width: min(190px, 42vw);
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(46, 74, 110, 0.86);
+  box-shadow: 0 10px 28px rgba(31, 51, 78, 0.24);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  transform: translate(-50%, -50%);
+}
+
+.tour-hotspot.info {
+  background: rgba(198, 107, 77, 0.9);
+}
+
+.tour-info-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.88);
+}
+
+.tour-info-panel p {
+  flex: 1;
+  margin: 0;
+  color: var(--muted);
+}
+
+.tour-room-list {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding-bottom: 6px;
+  overflow-x: auto;
+}
+
+.tour-room-list button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--blue);
+  background: rgba(255, 255, 255, 0.72);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.tour-room-list button.active {
+  color: #ffffff;
+  background: var(--blue);
+}
+
 .qr-box {
   display: grid;
   width: 112px;
@@ -1021,5 +1121,15 @@ h3 {
 
   .public-specs {
     grid-template-columns: 1fr;
+  }
+
+  .tour-panorama,
+  .tour-panorama img {
+    min-height: 360px;
+  }
+
+  .tour-info-panel {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

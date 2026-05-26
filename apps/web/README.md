@@ -32,12 +32,14 @@ Current routes:
 - `/properties`
 - `/subscription`
 - `/a/[tenantSlug]/[propertySlug]`
+- `/a/[tenantSlug]/[propertySlug]/tour`
 
 ## Backend-backed pages
 
 `/properties` connects to the backend property API and requires login.
 `/subscription` connects to the backend subscription API and requires login.
 `/a/[tenantSlug]/[propertySlug]` connects to the public property API and does not require login.
+`/a/[tenantSlug]/[propertySlug]/tour` connects to the public tour API and does not require login.
 
 Supported MVP actions:
 - list current tenant properties
@@ -47,6 +49,7 @@ Supported MVP actions:
 - upload and manage normal property images
 - upload panorama images and manage 360 tour rooms
 - create, edit, and delete manual 360 tour hotspots
+- view public 360 tours with room navigation and hotspot navigation
 - view current subscription, plan limits, and tenant usage
 
 The backend must be running at `http://localhost:5000` unless `NEXT_PUBLIC_API_BASE_URL` is changed.
