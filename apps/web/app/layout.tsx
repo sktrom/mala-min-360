@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "@photo-sphere-viewer/core/index.css";
+import "@photo-sphere-viewer/markers-plugin/index.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

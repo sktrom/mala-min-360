@@ -1151,6 +1151,56 @@ h3 {
   }
 }
 
+/* Real panorama viewer final sizing overrides */
+.real-panorama-viewer {
+  height: min(72vh, 720px);
+  min-height: 520px;
+  aspect-ratio: 16 / 9;
+}
+
+.real-panorama-viewer .real-panorama-canvas,
+.real-panorama-viewer .psv-container,
+.real-panorama-viewer .psv-canvas-container {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .real-panorama-viewer {
+    height: min(68vh, 620px);
+    min-height: 460px;
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 768px) {
+  .real-panorama-viewer {
+    height: 65vh;
+    min-height: 420px;
+    aspect-ratio: 4 / 5;
+  }
+
+  .psv-hotspot-label {
+    max-width: 150px;
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .real-panorama-viewer {
+    height: 62vh;
+    min-height: 380px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .psv-hotspot-label {
+    max-width: 128px;
+    font-size: 0.78rem;
+  }
+}
+
 /* Responsive layout polish */
 html,
 body {
@@ -2343,6 +2393,74 @@ h3 {
   min-height: 600px;
 }
 
+.real-panorama-viewer {
+  height: min(72vh, 720px);
+  min-height: 520px;
+}
+
+.real-panorama-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.real-panorama-canvas .psv-container {
+  direction: ltr;
+  font-family: "Tajawal", "IBM Plex Sans Arabic", "Segoe UI", "Tahoma", sans-serif;
+}
+
+.real-panorama-canvas .psv-navbar {
+  background: rgba(17, 24, 39, 0.62);
+  backdrop-filter: blur(14px);
+}
+
+.real-panorama-canvas .psv-caption {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.psv-hotspot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 190px;
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.24);
+  font-family: "Tajawal", "IBM Plex Sans Arabic", "Segoe UI", "Tahoma", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.3;
+  white-space: normal;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.psv-hotspot-nav .psv-hotspot-label {
+  color: #1f2937;
+  background: rgba(214, 168, 79, 0.95);
+}
+
+.psv-hotspot-info .psv-hotspot-label {
+  color: #ffffff;
+  background: rgba(36, 59, 83, 0.92);
+}
+
+.tour-viewer-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #ffffff;
+  background: rgba(17, 24, 39, 0.86);
+  text-align: center;
+  font-weight: 900;
+}
+
 .tour-hotspot {
   backdrop-filter: blur(10px);
   background: rgba(36, 59, 83, 0.9);
@@ -2430,7 +2548,8 @@ h3 {
   .gallery,
   .public-gallery-image.main,
   .tour-panorama,
-  .tour-panorama img {
+  .tour-panorama img,
+  .real-panorama-viewer {
     min-height: 340px;
   }
 

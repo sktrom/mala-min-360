@@ -96,6 +96,11 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseCors(DevelopmentCorsPolicy);
+}
+
+if (app.Environment.IsDevelopment())
+{
     using var scope = app.Services.CreateScope();
     await DevelopmentSeeder.SeedAsync(scope.ServiceProvider);
 
@@ -108,11 +113,6 @@ if (app.Environment.IsDevelopment())
         FileProvider = new PhysicalFileProvider(storageRootPath),
         RequestPath = "/uploads"
     });
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors(DevelopmentCorsPolicy);
 }
 
 app.UseAuthentication();

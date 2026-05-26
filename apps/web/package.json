@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@photo-sphere-viewer/core": "^5.14.1",
+    "@photo-sphere-viewer/markers-plugin": "^5.14.1",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

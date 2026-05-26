@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Viewer } from "@photo-sphere-viewer/core";
+import { MarkersPlugin, type MarkerConfig } from "@photo-sphere-viewer/markers-plugin";
 import { ApiError, getPublicTour, trackPublicTourView } from "@/lib/api";
 import type { PublicTour, PublicTourHotspot, PublicTourRoom } from "@/lib/types";
 import { getMediaUrl } from "@/lib/url";
@@ -10,12 +12,23 @@ type PublicTourViewerProps = {
   propertySlug: string;
 };
 
+type HotspotMarkerData = {
+  hotspotId: string;
+  type: PublicTourHotspot["type"];
+  targetRoomId: string | null;
+  label: string;
+};
+
 export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerProps) {
   const [tour, setTour] = useState<PublicTour | null>(null);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
+  const [viewerError, setViewerError] = useState<string | null>(null);
+  const [roomWarning, setRoomWarning] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const viewerContainerRef = useRef<HTMLDivElement | null>(null);
+  const viewerRef = useRef<Viewer | null>(null);
   const trackedPropertyId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -75,6 +88,64 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
     return tour.rooms.find((room) => room.id === activeRoomId) ?? tour.rooms[0] ?? null;
   }, [tour, activeRoomId]);
 
+  useEffect(() => {
+    if (!activeRoom || !viewerContainerRef.current) {
+      return;
+    }
+
+    setViewerError(null);
+    setActiveInfo(null);
+    setRoomWarning(null);
+
+    let viewer: Viewer | null = null;
+
+    try {
+      viewer = new Viewer({
+        container: viewerContainerRef.current,
+        panorama: getMediaUrl(activeRoom.panoramaUrl),
+        caption: activeRoom.name,
+        description: activeRoom.name,
+        defaultYaw: 0,
+        defaultPitch: 0,
+        defaultZoomLvl: 45,
+        mousewheel: true,
+        touchmoveTwoFingers: false,
+        navbar: ["zoom", "move", "caption", "fullscreen"],
+        loadingTxt: "جاري تحميل الصورة البانورامية...",
+        plugins: [
+          [
+            MarkersPlugin,
+            {
+              markers: createMarkers(activeRoom.hotspots),
+              defaultHoverScale: { amount: 1.08, duration: 120 }
+            }
+          ]
+        ]
+      });
+
+      const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
+
+      markersPlugin.addEventListener("select-marker", (event) => {
+        const markerData = event.marker.config.data as HotspotMarkerData | undefined;
+
+        if (!markerData) {
+          return;
+        }
+
+        handleMarkerSelect(markerData);
+      });
+
+      viewerRef.current = viewer;
+    } catch {
+      setViewerError("تعذر تشغيل عارض 360 على هذا الجهاز.");
+    }
+
+    return () => {
+      viewerRef.current = null;
+      viewer?.destroy();
+    };
+  }, [activeRoom?.id]);
+
   if (isLoading) {
     return (
       <section className="container public-tour-state">
@@ -107,17 +178,21 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
     );
   }
 
-  function handleHotspotClick(hotspot: PublicTourHotspot) {
-    if (hotspot.type === "Navigate") {
-      if (hotspot.targetRoomId && tour?.rooms.some((room) => room.id === hotspot.targetRoomId)) {
-        setActiveRoomId(hotspot.targetRoomId);
+  function handleMarkerSelect(markerData: HotspotMarkerData) {
+    if (markerData.type === "Navigate") {
+      if (markerData.targetRoomId && tour?.rooms.some((room) => room.id === markerData.targetRoomId)) {
+        setActiveRoomId(markerData.targetRoomId);
         setActiveInfo(null);
+        setRoomWarning(null);
+      } else {
+        setRoomWarning("الغرفة الهدف غير متاحة.");
       }
 
       return;
     }
 
-    setActiveInfo(hotspot.label);
+    setActiveInfo(markerData.label);
+    setRoomWarning(null);
   }
 
   return (
@@ -132,20 +207,13 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
         </section>
 
         <section className="tour-viewer-shell">
-          <div className="tour-panorama" aria-label="عارض جولة 360">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={getMediaUrl(activeRoom.panoramaUrl)} alt={activeRoom.name} />
-            {activeRoom.hotspots.map((hotspot) => (
-              <button
-                className={`tour-hotspot ${hotspot.type === "Navigate" ? "navigate" : "info"}`}
-                type="button"
-                key={hotspot.id}
-                style={getHotspotPosition(hotspot)}
-                onClick={() => handleHotspotClick(hotspot)}
-              >
-                {hotspot.type === "Navigate" ? "↗" : "i"} {hotspot.label}
-              </button>
-            ))}
+          <div className="tour-panorama real-panorama-viewer" aria-label="عارض جولة 360">
+            <div ref={viewerContainerRef} className="real-panorama-canvas" />
+            {viewerError && (
+              <div className="tour-viewer-fallback">
+                <p>{viewerError}</p>
+              </div>
+            )}
           </div>
 
           {activeInfo && (
@@ -158,7 +226,9 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
             </div>
           )}
 
-          <p className="note">عرض 360 تجريبي — سيتم تحسين العارض لاحقاً.</p>
+          {roomWarning && <p className="form-error">{roomWarning}</p>}
+
+          <p className="note">لأفضل تجربة، استخدم صورة بانورامية 2:1 بصيغة Equirectangular.</p>
         </section>
 
         <nav className="tour-room-list" aria-label="غرف الجولة">
@@ -170,6 +240,7 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
               onClick={() => {
                 setActiveRoomId(room.id);
                 setActiveInfo(null);
+                setRoomWarning(null);
               }}
             >
               {room.name}
@@ -179,6 +250,46 @@ export function PublicTourViewer({ tenantSlug, propertySlug }: PublicTourViewerP
       </div>
     </main>
   );
+}
+
+function createMarkers(hotspots: PublicTourHotspot[]): MarkerConfig[] {
+  return hotspots.map((hotspot) => ({
+    id: hotspot.id,
+    position: {
+      yaw: `${hotspot.yaw}deg`,
+      pitch: `${hotspot.pitch}deg`
+    },
+    html: createMarkerHtml(hotspot),
+    className: hotspot.type === "Navigate" ? "psv-hotspot-nav" : "psv-hotspot-info",
+    anchor: "center center",
+    tooltip: {
+      content: hotspot.label,
+      position: "top center",
+      trigger: "hover"
+    },
+    data: {
+      hotspotId: hotspot.id,
+      type: hotspot.type,
+      targetRoomId: hotspot.targetRoomId,
+      label: hotspot.label
+    } satisfies HotspotMarkerData
+  }));
+}
+
+function createMarkerHtml(hotspot: PublicTourHotspot): string {
+  const icon = hotspot.type === "Navigate" ? "↗" : "i";
+  const label = escapeHtml(hotspot.label);
+
+  return `<span class="psv-hotspot-label"><span>${icon}</span>${label}</span>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function normalizeTour(tour: PublicTour): PublicTour {
@@ -193,20 +304,6 @@ function normalizeTour(tour: PublicTour): PublicTour {
 
 function getOrderedRooms(rooms: PublicTourRoom[]): PublicTourRoom[] {
   return [...rooms].sort((first, second) => first.sortOrder - second.sortOrder);
-}
-
-function getHotspotPosition(hotspot: PublicTourHotspot): { left: string; top: string } {
-  const x = clamp(((hotspot.yaw + 180) / 360) * 100, 5, 95);
-  const y = clamp(((90 - hotspot.pitch) / 180) * 100, 5, 95);
-
-  return {
-    left: `${x}%`,
-    top: `${y}%`
-  };
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }
 
 function toTourError(error: unknown): string {
