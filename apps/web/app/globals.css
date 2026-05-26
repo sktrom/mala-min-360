@@ -697,6 +697,18 @@ h3 {
   margin: 0;
 }
 
+.tour-room-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.tour-room-form .field,
+.tour-room-form .form-actions {
+  margin: 0;
+}
+
 .property-images-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -844,6 +856,10 @@ h3 {
   }
 
   .image-upload-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tour-room-form {
     grid-template-columns: 1fr;
   }
 

@@ -92,3 +92,27 @@ export type PropertyImage = {
   isCover: boolean;
   createdAt: string;
 };
+
+export type TourRoom = {
+  id: string;
+  propertyId: string;
+  name: string;
+  panoramaMediaId: string;
+  panoramaUrl: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  sortOrder: number;
+  isStartRoom: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateTourRoomRequest = {
+  name: string;
+  panoramaMediaId: string;
+  sortOrder?: number | null;
+  isStartRoom?: boolean | null;
+};

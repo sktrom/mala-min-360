@@ -44,6 +44,7 @@ Supported MVP actions:
 - publish / unpublish
 - soft delete
 - upload and manage normal property images
+- upload panorama images and manage 360 tour rooms
 - view current subscription, plan limits, and tenant usage
 
 The backend must be running at `http://localhost:5000` unless `NEXT_PUBLIC_API_BASE_URL` is changed.

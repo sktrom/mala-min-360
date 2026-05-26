@@ -1,10 +1,12 @@
 import type {
   CreatePropertyRequest,
+  CreateTourRoomRequest,
   CurrentSubscription,
   MediaFile,
   Property,
   PropertyImage,
-  StatsOverview
+  StatsOverview,
+  TourRoom
 } from "./types";
 
 export type CurrentUser = {
@@ -175,6 +177,49 @@ export async function deletePropertyImage(
   imageId: string
 ): Promise<void> {
   await request<void>(`/api/properties/${propertyId}/images/${imageId}`, {
+    method: "DELETE",
+    headers: createAuthHeaders(token)
+  }, false);
+}
+
+export async function getTourRooms(token: string, propertyId: string): Promise<TourRoom[]> {
+  return request<TourRoom[]>(`/api/properties/${propertyId}/tour/rooms`, {
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function createTourRoom(
+  token: string,
+  propertyId: string,
+  room: CreateTourRoomRequest
+): Promise<TourRoom> {
+  return request<TourRoom>(`/api/properties/${propertyId}/tour/rooms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...createAuthHeaders(token)
+    },
+    body: JSON.stringify(room)
+  });
+}
+
+export async function setTourRoomStart(
+  token: string,
+  propertyId: string,
+  roomId: string
+): Promise<void> {
+  await request<void>(`/api/properties/${propertyId}/tour/rooms/${roomId}/start`, {
+    method: "PATCH",
+    headers: createAuthHeaders(token)
+  }, false);
+}
+
+export async function deleteTourRoom(
+  token: string,
+  propertyId: string,
+  roomId: string
+): Promise<void> {
+  await request<void>(`/api/properties/${propertyId}/tour/rooms/${roomId}`, {
     method: "DELETE",
     headers: createAuthHeaders(token)
   }, false);

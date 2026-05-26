@@ -12,6 +12,12 @@ import {
 import { getAccessToken } from "@/lib/auth-storage";
 import type { CreatePropertyRequest, Property } from "@/lib/types";
 import { PropertyImagesManager } from "./PropertyImagesManager";
+import { TourRoomsManager } from "./TourRoomsManager";
+
+type ActivePanel = {
+  propertyId: string;
+  panel: "images" | "tour";
+} | null;
 
 type PropertyFormState = {
   title: string;
@@ -72,7 +78,7 @@ export function PropertiesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionPropertyId, setActionPropertyId] = useState<string | null>(null);
-  const [openImagesPropertyId, setOpenImagesPropertyId] = useState<string | null>(null);
+  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -390,9 +396,20 @@ export function PropertiesManager() {
                     <button
                       className="button secondary"
                       type="button"
-                      onClick={() => toggleImagesPanel(property.id)}
+                      onClick={() => togglePanel(property.id, "images")}
                     >
-                      {openImagesPropertyId === property.id ? "إغلاق الصور" : "إدارة الصور"}
+                      {activePanel?.propertyId === property.id && activePanel.panel === "images"
+                        ? "إغلاق الصور"
+                        : "إدارة الصور"}
+                    </button>
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => togglePanel(property.id, "tour")}
+                    >
+                      {activePanel?.propertyId === property.id && activePanel.panel === "tour"
+                        ? "إغلاق الجولة"
+                        : "إدارة جولة 360"}
                     </button>
                     <button
                       className="button danger"
@@ -403,8 +420,14 @@ export function PropertiesManager() {
                       حذف
                     </button>
                   </div>
-                  {openImagesPropertyId === property.id && (
+                  {activePanel?.propertyId === property.id && activePanel.panel === "images" && (
                     <PropertyImagesManager
+                      propertyId={property.id}
+                      propertyTitle={property.title}
+                    />
+                  )}
+                  {activePanel?.propertyId === property.id && activePanel.panel === "tour" && (
+                    <TourRoomsManager
                       propertyId={property.id}
                       propertyTitle={property.title}
                     />
@@ -422,8 +445,10 @@ export function PropertiesManager() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function toggleImagesPanel(propertyId: string) {
-    setOpenImagesPropertyId((current) => (current === propertyId ? null : propertyId));
+  function togglePanel(propertyId: string, panel: "images" | "tour") {
+    setActivePanel((current) =>
+      current?.propertyId === propertyId && current.panel === panel ? null : { propertyId, panel }
+    );
   }
 }
 
