@@ -1,12 +1,15 @@
 import type {
   CreatePropertyRequest,
+  CreateTourHotspotRequest,
   CreateTourRoomRequest,
   CurrentSubscription,
   MediaFile,
   Property,
   PropertyImage,
   StatsOverview,
-  TourRoom
+  TourHotspot,
+  TourRoom,
+  UpdateTourHotspotRequest
 } from "./types";
 
 export type CurrentUser = {
@@ -223,6 +226,74 @@ export async function deleteTourRoom(
     method: "DELETE",
     headers: createAuthHeaders(token)
   }, false);
+}
+
+export async function getTourHotspots(
+  token: string,
+  propertyId: string,
+  roomId: string
+): Promise<TourHotspot[]> {
+  return request<TourHotspot[]>(
+    `/api/properties/${propertyId}/tour/rooms/${roomId}/hotspots`,
+    {
+      headers: createAuthHeaders(token)
+    }
+  );
+}
+
+export async function createTourHotspot(
+  token: string,
+  propertyId: string,
+  roomId: string,
+  hotspot: CreateTourHotspotRequest
+): Promise<TourHotspot> {
+  return request<TourHotspot>(
+    `/api/properties/${propertyId}/tour/rooms/${roomId}/hotspots`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...createAuthHeaders(token)
+      },
+      body: JSON.stringify(hotspot)
+    }
+  );
+}
+
+export async function updateTourHotspot(
+  token: string,
+  propertyId: string,
+  roomId: string,
+  hotspotId: string,
+  hotspot: UpdateTourHotspotRequest
+): Promise<TourHotspot> {
+  return request<TourHotspot>(
+    `/api/properties/${propertyId}/tour/rooms/${roomId}/hotspots/${hotspotId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...createAuthHeaders(token)
+      },
+      body: JSON.stringify(hotspot)
+    }
+  );
+}
+
+export async function deleteTourHotspot(
+  token: string,
+  propertyId: string,
+  roomId: string,
+  hotspotId: string
+): Promise<void> {
+  await request<void>(
+    `/api/properties/${propertyId}/tour/rooms/${roomId}/hotspots/${hotspotId}`,
+    {
+      method: "DELETE",
+      headers: createAuthHeaders(token)
+    },
+    false
+  );
 }
 
 async function request<T>(

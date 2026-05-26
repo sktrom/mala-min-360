@@ -12,6 +12,7 @@ import {
 import { getAccessToken } from "@/lib/auth-storage";
 import type { TourRoom } from "@/lib/types";
 import { getMediaUrl } from "@/lib/url";
+import { TourHotspotsManager } from "./TourHotspotsManager";
 
 type TourRoomsManagerProps = {
   propertyId: string;
@@ -214,41 +215,44 @@ export function TourRoomsManager({ propertyId, propertyTitle }: TourRoomsManager
       ) : rooms.length === 0 ? (
         <p className="empty-state">لا توجد غرف 360 لهذا العقار بعد.</p>
       ) : (
-        <div className="property-images-grid">
-          {rooms.map((room) => (
-            <article className="property-image-card" key={room.id}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={getMediaUrl(room.panoramaUrl)} alt={room.name} />
-              <div className="property-image-body">
-                <div className="badge-row">
-                  {room.isStartRoom && <span className="badge published">غرفة البداية</span>}
-                  <span className="badge">ترتيب {room.sortOrder}</span>
+        <>
+          <div className="property-images-grid">
+            {rooms.map((room) => (
+              <article className="property-image-card" key={room.id}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={getMediaUrl(room.panoramaUrl)} alt={room.name} />
+                <div className="property-image-body">
+                  <div className="badge-row">
+                    {room.isStartRoom && <span className="badge published">غرفة البداية</span>}
+                    <span className="badge">ترتيب {room.sortOrder}</span>
+                  </div>
+                  <strong>{room.name}</strong>
+                  <p>{room.originalFileName}</p>
+                  <p>{room.mimeType} · {formatFileSize(room.sizeBytes)}</p>
+                  <div className="property-actions">
+                    <button
+                      className="button secondary"
+                      type="button"
+                      disabled={room.isStartRoom || actionRoomId === room.id}
+                      onClick={() => void handleSetStart(room)}
+                    >
+                      تعيين كبداية
+                    </button>
+                    <button
+                      className="button danger"
+                      type="button"
+                      disabled={actionRoomId === room.id}
+                      onClick={() => void handleDelete(room)}
+                    >
+                      حذف الغرفة
+                    </button>
+                  </div>
                 </div>
-                <strong>{room.name}</strong>
-                <p>{room.originalFileName}</p>
-                <p>{room.mimeType} · {formatFileSize(room.sizeBytes)}</p>
-                <div className="property-actions">
-                  <button
-                    className="button secondary"
-                    type="button"
-                    disabled={room.isStartRoom || actionRoomId === room.id}
-                    onClick={() => void handleSetStart(room)}
-                  >
-                    تعيين كبداية
-                  </button>
-                  <button
-                    className="button danger"
-                    type="button"
-                    disabled={actionRoomId === room.id}
-                    onClick={() => void handleDelete(room)}
-                  >
-                    حذف الغرفة
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+          <TourHotspotsManager propertyId={propertyId} rooms={rooms} />
+        </>
       )}
     </section>
   );

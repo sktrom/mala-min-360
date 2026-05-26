@@ -45,6 +45,7 @@ Supported MVP actions:
 - soft delete
 - upload and manage normal property images
 - upload panorama images and manage 360 tour rooms
+- create, edit, and delete manual 360 tour hotspots
 - view current subscription, plan limits, and tenant usage
 
 The backend must be running at `http://localhost:5000` unless `NEXT_PUBLIC_API_BASE_URL` is changed.

@@ -116,3 +116,33 @@ export type CreateTourRoomRequest = {
   sortOrder?: number | null;
   isStartRoom?: boolean | null;
 };
+
+export type TourHotspotType = "Navigate" | "Info";
+
+export type TourHotspot = {
+  id: string;
+  roomId: string;
+  targetRoomId: string | null;
+  type: TourHotspotType;
+  label: string;
+  yaw: number;
+  pitch: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateTourHotspotRequest = {
+  targetRoomId?: string | null;
+  type: TourHotspotType;
+  label: string;
+  yaw: number;
+  pitch: number;
+};
+
+export type UpdateTourHotspotRequest = {
+  targetRoomId?: string | null;
+  type: TourHotspotType;
+  label: string;
+  yaw: number;
+  pitch: number;
+};
