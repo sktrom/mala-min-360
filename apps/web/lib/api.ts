@@ -1,4 +1,11 @@
-import type { CreatePropertyRequest, CurrentSubscription, Property, StatsOverview } from "./types";
+import type {
+  CreatePropertyRequest,
+  CurrentSubscription,
+  MediaFile,
+  Property,
+  PropertyImage,
+  StatsOverview
+} from "./types";
 
 export type CurrentUser = {
   id: string;
@@ -107,6 +114,70 @@ export async function getCurrentSubscription(token: string): Promise<CurrentSubs
   return request<CurrentSubscription>("/api/subscription/me", {
     headers: createAuthHeaders(token)
   });
+}
+
+export async function uploadMedia(
+  token: string,
+  file: File,
+  fileType: string
+): Promise<MediaFile> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("fileType", fileType);
+
+  return request<MediaFile>("/api/media/upload", {
+    method: "POST",
+    headers: createAuthHeaders(token),
+    body: formData
+  });
+}
+
+export async function getPropertyImages(
+  token: string,
+  propertyId: string
+): Promise<PropertyImage[]> {
+  return request<PropertyImage[]>(`/api/properties/${propertyId}/images`, {
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function addPropertyImage(
+  token: string,
+  propertyId: string,
+  mediaFileId: string,
+  sortOrder?: number,
+  isCover?: boolean
+): Promise<PropertyImage> {
+  return request<PropertyImage>(`/api/properties/${propertyId}/images`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...createAuthHeaders(token)
+    },
+    body: JSON.stringify({ mediaFileId, sortOrder, isCover })
+  });
+}
+
+export async function setPropertyImageCover(
+  token: string,
+  propertyId: string,
+  imageId: string
+): Promise<void> {
+  await request<void>(`/api/properties/${propertyId}/images/${imageId}/cover`, {
+    method: "PATCH",
+    headers: createAuthHeaders(token)
+  }, false);
+}
+
+export async function deletePropertyImage(
+  token: string,
+  propertyId: string,
+  imageId: string
+): Promise<void> {
+  await request<void>(`/api/properties/${propertyId}/images/${imageId}`, {
+    method: "DELETE",
+    headers: createAuthHeaders(token)
+  }, false);
 }
 
 async function request<T>(

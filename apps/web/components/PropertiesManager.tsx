@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth-storage";
 import type { CreatePropertyRequest, Property } from "@/lib/types";
+import { PropertyImagesManager } from "./PropertyImagesManager";
 
 type PropertyFormState = {
   title: string;
@@ -71,6 +72,7 @@ export function PropertiesManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionPropertyId, setActionPropertyId] = useState<string | null>(null);
+  const [openImagesPropertyId, setOpenImagesPropertyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -386,6 +388,13 @@ export function PropertiesManager() {
                       {property.isPublished ? "إلغاء النشر" : "نشر"}
                     </button>
                     <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => toggleImagesPanel(property.id)}
+                    >
+                      {openImagesPropertyId === property.id ? "إغلاق الصور" : "إدارة الصور"}
+                    </button>
+                    <button
                       className="button danger"
                       type="button"
                       disabled={actionPropertyId === property.id}
@@ -394,6 +403,12 @@ export function PropertiesManager() {
                       حذف
                     </button>
                   </div>
+                  {openImagesPropertyId === property.id && (
+                    <PropertyImagesManager
+                      propertyId={property.id}
+                      propertyTitle={property.title}
+                    />
+                  )}
                 </div>
               </article>
             ))}
@@ -405,6 +420,10 @@ export function PropertiesManager() {
 
   function updateForm(field: keyof PropertyFormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function toggleImagesPanel(propertyId: string) {
+    setOpenImagesPropertyId((current) => (current === propertyId ? null : propertyId));
   }
 }
 

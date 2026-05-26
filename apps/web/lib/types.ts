@@ -63,3 +63,32 @@ export type CurrentSubscription = {
   currentTours: number;
   currentStorageMb: number;
 };
+
+export type MediaFile = {
+  id: string;
+  url: string;
+  storageKey: string;
+  fileType: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  processingStatus: string;
+  createdAt: string;
+};
+
+export type PropertyImage = {
+  id: string;
+  propertyId: string;
+  mediaFileId: string;
+  url: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  sortOrder: number;
+  isCover: boolean;
+  createdAt: string;
+};

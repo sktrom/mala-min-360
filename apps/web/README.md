@@ -43,6 +43,7 @@ Supported MVP actions:
 - create property
 - publish / unpublish
 - soft delete
+- upload and manage normal property images
 - view current subscription, plan limits, and tenant usage
 
 The backend must be running at `http://localhost:5000` unless `NEXT_PUBLIC_API_BASE_URL` is changed.
