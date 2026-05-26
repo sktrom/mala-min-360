@@ -8,10 +8,15 @@ export function BrandHeader({ compact = false }: BrandHeaderProps) {
   return (
     <header className="brand-header">
       <Link href="/" className="brand-lockup" aria-label="Mala Min 360">
-        <span className="brand-mark">360</span>
+        <span className="brand-mark" aria-hidden="true">
+          <span className="brand-house" />
+          <span className="brand-orbit" />
+          <span className="brand-dot" />
+        </span>
         <span className="brand-name">
-          <span>Mala Min 360</span>
           <span>مالا من 360</span>
+          <span>Mala Min 360</span>
+          {!compact && <span className="brand-tagline">بيتك من كل زاوية</span>}
         </span>
       </Link>
 
