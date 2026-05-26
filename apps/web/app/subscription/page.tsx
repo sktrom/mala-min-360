@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { BrandHeader } from "@/components/BrandHeader";
 import { LogoutButton } from "@/components/LogoutButton";
-import { PropertiesManager } from "@/components/PropertiesManager";
 import { RequireAuth } from "@/components/RequireAuth";
+import { SubscriptionSummary } from "@/components/SubscriptionSummary";
 
-export default function PropertiesPage() {
+export default function SubscriptionPage() {
   return (
     <RequireAuth>
       <main className="app-shell">
@@ -12,21 +12,21 @@ export default function PropertiesPage() {
           <BrandHeader compact />
           <nav className="side-nav" aria-label="لوحة التحكم">
             <Link href="/dashboard">الرئيسية</Link>
-            <Link className="active" href="/properties">
-              العقارات
+            <Link href="/properties">العقارات</Link>
+            <Link className="active" href="/subscription">
+              الاشتراك
             </Link>
-            <Link href="/subscription">الاشتراك</Link>
           </nav>
         </aside>
         <section className="main-content">
           <div className="toolbar">
             <div>
-              <p className="eyebrow">إدارة العقارات</p>
-              <h1>العقارات</h1>
+              <p className="eyebrow">الباقة والحدود</p>
+              <h1>الاشتراك والحدود</h1>
             </div>
             <LogoutButton />
           </div>
-          <PropertiesManager />
+          <SubscriptionSummary />
         </section>
       </main>
     </RequireAuth>

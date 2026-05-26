@@ -43,3 +43,23 @@ export type StatsOverview = {
   totalQrScans: number;
 };
 
+export type Plan = {
+  id: string;
+  name: string;
+  code: string;
+  maxProperties: number;
+  maxTours: number;
+  storageLimitMb: number;
+  monthlyPrice: number;
+  isActive: boolean;
+};
+
+export type CurrentSubscription = {
+  status: string;
+  startsAt: string;
+  endsAt: string;
+  plan: Plan;
+  currentProperties: number;
+  currentTours: number;
+  currentStorageMb: number;
+};

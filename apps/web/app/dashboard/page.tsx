@@ -16,6 +16,7 @@ export default function DashboardPage() {
               الرئيسية
             </Link>
             <Link href="/properties">العقارات</Link>
+            <Link href="/subscription">الاشتراك</Link>
           </nav>
         </aside>
         <section className="main-content">
@@ -28,9 +29,17 @@ export default function DashboardPage() {
             <LogoutButton />
           </div>
           <DashboardStats />
+          <div className="panel subscription-cta">
+            <div>
+              <h2>الباقة والحدود</h2>
+              <p>راجع الباقة الحالية وحدود العقارات والجولات والتخزين.</p>
+            </div>
+            <Link className="button secondary" href="/subscription">
+              عرض الباقة والحدود
+            </Link>
+          </div>
         </section>
       </main>
     </RequireAuth>
   );
 }
-

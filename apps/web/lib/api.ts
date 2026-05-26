@@ -1,4 +1,4 @@
-import type { CreatePropertyRequest, Property, StatsOverview } from "./types";
+import type { CreatePropertyRequest, CurrentSubscription, Property, StatsOverview } from "./types";
 
 export type CurrentUser = {
   id: string;
@@ -99,6 +99,12 @@ export async function deleteProperty(token: string, propertyId: string): Promise
 
 export async function getStatsOverview(token: string): Promise<StatsOverview> {
   return request<StatsOverview>("/api/stats/overview", {
+    headers: createAuthHeaders(token)
+  });
+}
+
+export async function getCurrentSubscription(token: string): Promise<CurrentSubscription> {
+  return request<CurrentSubscription>("/api/subscription/me", {
     headers: createAuthHeaders(token)
   });
 }

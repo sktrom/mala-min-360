@@ -30,16 +30,19 @@ Current routes:
 - `/login`
 - `/dashboard`
 - `/properties`
+- `/subscription`
 - `/a/demo-agency/demo-property`
 
 ## Backend-backed pages
 
 `/properties` connects to the backend property API and requires login.
+`/subscription` connects to the backend subscription API and requires login.
 
 Supported MVP actions:
 - list current tenant properties
 - create property
 - publish / unpublish
 - soft delete
+- view current subscription, plan limits, and tenant usage
 
 The backend must be running at `http://localhost:5000` unless `NEXT_PUBLIC_API_BASE_URL` is changed.
