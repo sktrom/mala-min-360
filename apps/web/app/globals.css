@@ -1151,6 +1151,487 @@ h3 {
   }
 }
 
+/* Responsive layout polish */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+body {
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+}
+
+h1 {
+  font-size: clamp(2.15rem, 6.5vw, 5.25rem);
+}
+
+h2 {
+  font-size: clamp(1.45rem, 3.2vw, 2.35rem);
+}
+
+h3 {
+  font-size: clamp(1.08rem, 2.3vw, 1.35rem);
+}
+
+.container {
+  width: min(1180px, calc(100% - clamp(24px, 4vw, 56px)));
+}
+
+.button,
+.side-nav a,
+.nav-links a,
+.tour-room-list button {
+  min-height: 44px;
+}
+
+.actions,
+.property-actions,
+.visitor-hero-actions,
+.login-links {
+  min-width: 0;
+}
+
+.field,
+.field input,
+.field select,
+.field textarea,
+.button {
+  min-width: 0;
+}
+
+.dashboard-grid,
+.properties-list,
+.visitor-gallery-grid,
+.feature-grid,
+.property-images-grid,
+.hotspots-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.property-form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}
+
+.subscription-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.hotspot-form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+}
+
+.tour-room-form {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.gallery,
+.tour-panorama,
+.visitor-card-image,
+.property-image-card img,
+.property-thumb,
+.property-preview-image {
+  max-width: 100%;
+}
+
+.tour-panorama {
+  aspect-ratio: 16 / 9;
+  min-height: auto;
+}
+
+.tour-panorama img {
+  height: 100%;
+  min-height: auto;
+}
+
+.visitor-card-image,
+.visitor-card-image img,
+.visitor-image-placeholder {
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+}
+
+.public-gallery-image.main,
+.gallery {
+  min-height: 0;
+}
+
+.public-gallery-image.main {
+  aspect-ratio: 4 / 3;
+}
+
+.public-gallery-image img {
+  min-height: 0;
+}
+
+.gateway-actions-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+.gateway-preview,
+.gateway-preview-main {
+  min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  .container {
+    width: min(1240px, calc(100% - 72px));
+  }
+
+  .gateway-hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.78fr);
+  }
+
+  .visitor-gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .public-hero {
+    grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.82fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    width: min(100% - 32px, 960px);
+  }
+
+  .brand-header {
+    gap: 14px;
+  }
+
+  .gateway-hero {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
+    padding: 36px 0 24px;
+  }
+
+  .gateway-preview {
+    min-height: 360px;
+  }
+
+  .visitor-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-shell {
+    display: block;
+    background: var(--color-bg);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 14px 18px;
+  }
+
+  .sidebar .brand-header {
+    padding: 0;
+  }
+
+  .side-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 14px;
+  }
+
+  .side-nav a {
+    text-align: center;
+  }
+
+  .main-content {
+    padding: 24px 18px 40px;
+  }
+
+  .public-hero {
+    grid-template-columns: 1fr;
+    padding: 28px 0 48px;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr 0.55fr;
+  }
+
+  .public-info {
+    padding: 24px;
+  }
+
+  .tour-panorama {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: min(100% - 28px, 720px);
+  }
+
+  .brand-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .nav-links a {
+    text-align: center;
+  }
+
+  .gateway-copy h1,
+  .hero-copy h1 {
+    font-size: clamp(2.4rem, 10vw, 4.5rem);
+  }
+
+  .lead {
+    font-size: clamp(1rem, 2.7vw, 1.12rem);
+  }
+
+  .gateway-preview {
+    min-height: 300px;
+  }
+
+  .gateway-preview-main {
+    min-height: 220px;
+  }
+
+  .gateway-actions-grid,
+  .visitor-gallery-grid,
+  .properties-list,
+  .dashboard-grid,
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gateway-action-card .button,
+  .actions .button,
+  .visitor-hero-actions .button,
+  .login-card .button {
+    width: 100%;
+  }
+
+  .visitor-hero {
+    padding: 34px 0 22px;
+  }
+
+  .visitor-card-body .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .auth-shell {
+    display: block;
+    min-height: 100svh;
+    padding: 18px 14px;
+  }
+
+  .login-card {
+    width: 100%;
+    min-height: calc(100svh - 36px);
+    padding: 22px;
+  }
+
+  .login-links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .login-links a {
+    text-align: center;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar .button {
+    width: 100%;
+  }
+
+  .subscription-cta,
+  .subscription-header,
+  .usage-meta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .property-form,
+  .tour-room-form,
+  .hotspot-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions,
+  .hotspot-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .form-actions .button,
+  .hotspot-actions .button,
+  .property-actions .button {
+    width: 100%;
+  }
+
+  .property-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .image-upload-row {
+    grid-template-columns: 1fr;
+  }
+
+  .property-images-grid,
+  .hotspots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-specs {
+    grid-template-columns: 1fr;
+  }
+
+  .public-info .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .tour-panorama {
+    aspect-ratio: 4 / 5;
+  }
+
+  .tour-hotspot {
+    max-width: 160px;
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 0.86rem;
+  }
+
+  .tour-info-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tour-room-list {
+    margin-inline: -14px;
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(100% - 22px, 440px);
+  }
+
+  .brand-lockup {
+    gap: 10px;
+  }
+
+  .brand-name span:first-child {
+    font-size: 1rem;
+  }
+
+  .brand-tagline {
+    font-size: 0.74rem !important;
+  }
+
+  .nav-links {
+    grid-template-columns: 1fr;
+  }
+
+  .gateway-page::before,
+  .visitor-page::before {
+    width: 220px;
+    height: 220px;
+    inset: 92px auto auto -96px;
+  }
+
+  .gateway-hero {
+    gap: 24px;
+    padding-top: 24px;
+  }
+
+  .gateway-copy h1 {
+    font-size: clamp(2.25rem, 13vw, 3.2rem);
+  }
+
+  .gateway-preview {
+    min-height: 260px;
+  }
+
+  .gateway-preview-main {
+    min-height: 178px;
+  }
+
+  .gateway-preview-card {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    padding: 14px;
+  }
+
+  .gateway-action-card,
+  .visitor-card-body,
+  .public-info,
+  .property-form-panel,
+  .subscription-summary,
+  .login-card {
+    padding: 18px;
+  }
+
+  .visitor-card-image,
+  .visitor-card-image img,
+  .visitor-image-placeholder {
+    aspect-ratio: 5 / 4;
+  }
+
+  .public-hero {
+    padding-top: 18px;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+
+  .side-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    padding: 18px 11px 34px;
+  }
+
+  .tour-panorama {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+  }
+
+  .tour-hotspot {
+    max-width: 132px;
+    font-size: 0.78rem;
+  }
+}
+
 /* Premium brand polish */
 :focus-visible {
   outline: 3px solid rgba(214, 168, 79, 0.58);
