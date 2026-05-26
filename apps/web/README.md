@@ -31,12 +31,13 @@ Current routes:
 - `/dashboard`
 - `/properties`
 - `/subscription`
-- `/a/demo-agency/demo-property`
+- `/a/[tenantSlug]/[propertySlug]`
 
 ## Backend-backed pages
 
 `/properties` connects to the backend property API and requires login.
 `/subscription` connects to the backend subscription API and requires login.
+`/a/[tenantSlug]/[propertySlug]` connects to the public property API and does not require login.
 
 Supported MVP actions:
 - list current tenant properties

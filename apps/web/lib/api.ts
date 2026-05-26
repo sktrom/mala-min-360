@@ -6,6 +6,7 @@ import type {
   MediaFile,
   Property,
   PropertyImage,
+  PublicProperty,
   StatsOverview,
   TourHotspot,
   TourRoom,
@@ -293,6 +294,18 @@ export async function deleteTourHotspot(
       headers: createAuthHeaders(token)
     },
     false
+  );
+}
+
+export async function getPublicProperty(
+  tenantSlug: string,
+  propertySlug: string
+): Promise<PublicProperty> {
+  return request<PublicProperty>(
+    `/api/public/properties/${encodeURIComponent(tenantSlug)}/${encodeURIComponent(propertySlug)}`,
+    {
+      headers: {}
+    }
   );
 }
 

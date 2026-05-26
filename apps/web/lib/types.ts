@@ -146,3 +146,42 @@ export type UpdateTourHotspotRequest = {
   yaw: number;
   pitch: number;
 };
+
+export type PublicTenantSummary = {
+  name: string;
+  slug: string;
+  phone: string | null;
+  whatsAppNumber: string | null;
+  logoUrl: string | null;
+  city: string | null;
+};
+
+export type PublicPropertyImage = {
+  url: string;
+  sortOrder: number;
+  isCover: boolean;
+};
+
+export type PublicProperty = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  city: string;
+  areaName: string;
+  addressText: string | null;
+  price: number;
+  currency: string;
+  listingType: string;
+  propertyType: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  floorNumber: number | null;
+  areaSqm: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  tenant: PublicTenantSummary;
+  coverImageUrl?: string | null;
+  images?: PublicPropertyImage[];
+};
